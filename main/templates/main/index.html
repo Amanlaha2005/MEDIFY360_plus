@@ -1,0 +1,2334 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediFy360</title>
+    <link
+      rel="icon"
+      href="{% static 'assets/logo.png' %}"
+      type="image/png"
+      sizes="48x48"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,400&family=DM+Serif+Display:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ─── RESET & BASE ─────────────────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --navy: #0b1f3a;
+        --navy-mid: #122b52;
+        --teal: #00b4a6;
+        --teal-glow: #00d4c4;
+        --sky: #e8f7f9;
+        --white: #ffffff;
+        --slate: #637e9a;
+        --danger: #e84b6a;
+        --text: #1a2e45;
+        --text-muted: #637e9a;
+        --card-bg: rgba(255, 255, 255, 0.05);
+        --border: rgba(255, 255, 255, 0.12);
+        --shadow: 0 24px 64px rgba(11, 31, 58, 0.35);
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: var(--navy);
+        color: var(--white);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* ─── NAV ────────────────────────────────────────────────────── */
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 900;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 48px;
+        height: 72px;
+        background: rgba(11, 31, 58, 0.85);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border-bottom: 1px solid var(--border);
+      }
+
+      /* Logo */
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .logo img {
+        width: 50px;
+        height: 38px;
+        border-radius: 8px;
+        padding: 4px;
+      }
+
+      .logo p {
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+
+      .medify {
+        color: var(--white);
+      }
+
+      .number {
+        color: var(--teal);
+      }
+
+      /* Nav links */
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        list-style: none;
+      }
+
+      .nav-links li {
+        position: relative;
+      }
+
+      .nav-links a {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 16px;
+        color: rgba(255, 255, 255, 0.75);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: 8px;
+        transition:
+          color 0.2s,
+          background 0.2s;
+      }
+
+      .nav-links a:hover,
+      .nav-links a.active {
+        color: var(--white);
+        background: rgba(0, 180, 166, 0.12);
+      }
+
+      .nav-links a.active {
+        color: var(--teal);
+      }
+
+      /* Chevron */
+      .chevron {
+        display: inline-block;
+        width: 0;
+        height: 0;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 5px solid currentColor;
+        transition: transform 0.25s;
+      }
+
+      .dropdown:hover .chevron {
+        transform: rotate(180deg);
+      }
+
+      /* Dropdown menu (nav) */
+      .nav-links .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%) translateY(6px);
+        opacity: 0;
+        pointer-events: none;
+        list-style: none;
+        min-width: 220px;
+        background: var(--navy-mid);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 6px;
+        box-shadow: var(--shadow);
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
+      }
+
+      .nav-links .dropdown:hover .dropdown-menu {
+        opacity: 1;
+        pointer-events: all;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      .nav-links .dropdown-menu li a {
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 0.825rem;
+        white-space: nowrap;
+      }
+
+      /* Login button & dropdown */
+      .nav-button {
+        position: relative;
+      }
+
+      .nav-button button {
+        padding: 9px 26px;
+        background: var(--teal);
+        color: var(--navy);
+        border: none;
+        border-radius: 8px;
+        font-family: "Poppins", sans-serif;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.15s,
+          box-shadow 0.2s;
+        box-shadow: 0 4px 18px rgba(0, 180, 166, 0.35);
+      }
+
+      .nav-button button:hover {
+        background: var(--teal-glow);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 24px rgba(0, 180, 166, 0.5);
+      }
+
+      .nav-button .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        opacity: 0;
+        pointer-events: none;
+        list-style: none;
+        min-width: 160px;
+        background: var(--navy-mid);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 6px;
+        box-shadow: var(--shadow);
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
+        transform: translateY(6px);
+      }
+
+      .nav-button.active .dropdown-menu {
+        opacity: 1;
+        pointer-events: all;
+        transform: translateY(0);
+      }
+
+      .nav-button .dropdown-menu li {
+        list-style: none;
+      }
+
+      .nav-button .dropdown-menu li a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+
+      .nav-button .dropdown-menu li a:hover {
+        background: rgba(0, 180, 166, 0.15);
+        color: var(--teal);
+      }
+
+      .nav-button .dropdown-menu li a .role-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(0, 180, 166, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        color: var(--teal);
+      }
+
+      /* ─── HERO ───────────────────────────────────────────────────── */
+      .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 120px 24px 80px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Ambient gradient blobs */
+      .hero::before {
+        content: "";
+        position: absolute;
+        width: 700px;
+        height: 700px;
+        background: radial-gradient(
+          circle,
+          rgba(0, 180, 166, 0.18) 0%,
+          transparent 70%
+        );
+        top: -100px;
+        left: -150px;
+        pointer-events: none;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(
+          circle,
+          rgba(0, 100, 200, 0.15) 0%,
+          transparent 70%
+        );
+        bottom: 0;
+        right: -100px;
+        pointer-events: none;
+      }
+
+      .hero-inner {
+        position: relative;
+        z-index: 2;
+        max-width: 780px;
+      }
+
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        border: 1px solid rgba(0, 180, 166, 0.4);
+        border-radius: 100px;
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--teal);
+        margin-bottom: 28px;
+        background: rgba(0, 180, 166, 0.08);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .hero-badge span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--teal);
+        display: inline-block;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+
+        50% {
+          opacity: 0.5;
+          transform: scale(1.4);
+        }
+      }
+
+      .hero h1 {
+        font-family: "DM Serif Display", serif;
+        font-size: clamp(2.8rem, 6vw, 4.8rem);
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+        margin-bottom: 24px;
+      }
+
+      .hero h1 em {
+        font-style: italic;
+        color: var(--teal);
+      }
+
+      .hero p {
+        font-size: 1.05rem;
+        line-height: 1.75;
+        color: rgba(255, 255, 255, 0.65);
+        max-width: 580px;
+        margin: 0 auto 40px;
+      }
+
+      .hero-cta {
+        display: flex;
+        gap: 14px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn-primary {
+        padding: 13px 34px;
+        background: var(--teal);
+        color: var(--navy);
+        border: none;
+        border-radius: 10px;
+        font-family: "Poppins", sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 6px 24px rgba(0, 180, 166, 0.4);
+      }
+
+      .btn-primary:hover {
+        background: var(--teal-glow);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 32px rgba(0, 180, 166, 0.5);
+      }
+
+      .btn-secondary {
+        padding: 13px 34px;
+        background: transparent;
+        color: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-family: "Poppins", sans-serif;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-secondary:hover {
+        border-color: var(--teal);
+        color: var(--teal);
+        background: rgba(0, 180, 166, 0.07);
+      }
+
+      /* Stats strip */
+      .stats-strip {
+        display: flex;
+        justify-content: center;
+        gap: 48px;
+        margin-top: 72px;
+        flex-wrap: wrap;
+      }
+
+      .stat {
+        text-align: center;
+      }
+
+      .stat-num {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--teal);
+        line-height: 1;
+      }
+
+      .stat-label {
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.5);
+        margin-top: 4px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      /* ─── ABOUT ──────────────────────────────────────────── */
+      .about {
+        min-height: 100vh;
+        padding: 110px 7% 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 32px;
+      }
+
+      .about-text {
+        max-width: 620px;
+      }
+
+      .about-tag {
+        display: inline-block;
+        margin-bottom: 18px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(0, 180, 166, 0.12);
+        color: var(--teal);
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .about h1 {
+        font-family: "DM Serif Display", serif;
+        font-size: clamp(2.8rem, 5vw, 4rem);
+        line-height: 1.05;
+        margin-bottom: 20px;
+        max-width: 520px;
+        color: var(--white);
+      }
+
+      .about p {
+        color: rgba(255, 255, 255, 0.68) !important;
+        font-size: 1.03rem;
+        line-height: 1.9;
+        max-width: 560px;
+      }
+
+      .about p + p {
+        margin-top: 14px;
+      }
+
+      .about-features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+        max-width: 520px;
+      }
+
+      .about-feature {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .about-feature ion-icon {
+        color: var(--teal);
+        font-size: 1rem;
+      }
+
+      .about-feature span {
+        font-size: 0.88rem;
+        color: rgba(255, 255, 255, 0.82);
+        white-space: nowrap;
+      }
+
+      .about img {
+        width: 600px;
+        max-width: 38vw;
+        height: auto;
+        margin-top: 40px;
+        filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.28));
+      }
+
+      /* ─── MOBILE ──────────────────────────────────────────── */
+      @media (max-width: 768px) {
+        .about {
+          min-height: auto;
+          padding: 120px 24px 70px;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          gap: 36px;
+        }
+
+        .about-text {
+          max-width: 90%;
+        }
+
+        .about h1 {
+          max-width: 100%;
+          font-size: 2.5rem;
+          margin-bottom: 18px;
+        }
+
+        .about p {
+          max-width: 100%;
+          font-size: 1rem;
+        }
+
+        .about-features {
+          justify-content: center;
+          max-width: 100%;
+        }
+
+        .about-feature {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .about img {
+          width: 250px;
+          max-width: 100%;
+          margin-top: 0;
+        }
+      }
+
+      /* ─── MODAL OVERLAY ──────────────────────────────────────────── */
+      .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(7, 18, 36, 0.75);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+        padding: 20px;
+        overflow-y: auto;
+      }
+
+      .modal.active {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      /* Modal card */
+      .modal-content {
+        position: relative;
+        width: 100%;
+        max-width: 440px;
+        background: linear-gradient(145deg, #0f2545 0%, #0b1a30 100%);
+        border: 1px solid rgba(0, 180, 166, 0.2);
+        border-radius: 20px;
+        padding: 44px 40px 40px;
+        box-shadow:
+          0 32px 80px rgba(0, 0, 0, 0.6),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        transform: scale(0.94) translateY(16px);
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .modal.active .modal-content {
+        transform: scale(1) translateY(0);
+      }
+
+      /* Brand mark inside modal */
+      .modal-brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 28px;
+      }
+
+      .modal-brand-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--teal);
+      }
+
+      .modal-brand-name {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--teal);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      /* Close btn */
+      .close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        cursor: pointer;
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 1.1rem;
+        transition:
+          background 0.15s,
+          color 0.15s;
+        border: none;
+      }
+
+      .close:hover {
+        background: rgba(232, 75, 106, 0.2);
+        color: var(--danger);
+      }
+
+      /* Modal title & subtitle */
+      .modal-content h2 {
+        font-family: "DM Serif Display", serif;
+        font-size: 1.85rem;
+        line-height: 1.1;
+        margin-bottom: 4px;
+      }
+
+      .modal-subtitle {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        margin-bottom: 28px;
+      }
+
+      /* Role badge */
+      .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        background: rgba(0, 180, 166, 0.12);
+        border: 1px solid rgba(0, 180, 166, 0.25);
+        border-radius: 100px;
+        font-size: 0.73rem;
+        font-weight: 600;
+        color: var(--teal);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 24px;
+      }
+
+      /* Form elements */
+      .modal-content form {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .form-group {
+        position: relative;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.55);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 7px;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 13px 48px 13px 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        color: var(--white);
+        font-family: "Poppins", sans-serif;
+        font-size: 0.875rem;
+        outline: none;
+        transition:
+          border 0.2s,
+          background 0.2s;
+      }
+
+      .form-group input::placeholder {
+        color: rgba(255, 255, 255, 0.25);
+      }
+
+      .form-group input:focus {
+        border-color: var(--teal);
+        background: rgba(0, 180, 166, 0.06);
+      }
+
+      /* For textareas / consistent padding */
+      .form-group input[type="password"],
+      .form-group input[type="text"],
+      .form-group input[type="email"],
+      .form-group input[type="tel"] {
+        padding-right: 16px;
+      }
+
+      /* Divider row */
+      .form-row {
+        display: flex;
+        gap: 12px;
+      }
+
+      .form-row .form-group {
+        flex: 1;
+      }
+
+      /* Submit btn */
+      .modal-content form .btn-submit {
+        margin-top: 6px;
+        padding: 13px;
+        background: var(--teal);
+        color: var(--navy);
+        border: none;
+        border-radius: 10px;
+        font-family: "Poppins", sans-serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: 0.01em;
+        transition:
+          background 0.2s,
+          transform 0.15s,
+          box-shadow 0.2s;
+        box-shadow: 0 6px 20px rgba(0, 180, 166, 0.35);
+      }
+
+      .modal-content form .btn-submit:hover {
+        background: var(--teal-glow);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 28px rgba(0, 180, 166, 0.5);
+      }
+
+      /* Modal links */
+      .modal-links {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+      }
+
+      .modal-links a {
+        color: var(--teal);
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: opacity 0.15s;
+      }
+
+      .modal-links a:hover {
+        opacity: 0.75;
+        text-decoration: underline;
+      }
+
+      /* OR divider */
+      .or-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 4px 0;
+        color: rgba(255, 255, 255, 0.2);
+        font-size: 0.75rem;
+      }
+
+      .or-divider::before,
+      .or-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      /* Alert box inside modal (for errors / success) */
+      .alert-box {
+        display: none;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+      .alert-box.error {
+        background: rgba(232, 75, 106, 0.12);
+        border: 1px solid rgba(232, 75, 106, 0.3);
+        color: #f48c9e;
+      }
+
+      .alert-box.success {
+        background: rgba(0, 180, 166, 0.12);
+        border: 1px solid rgba(0, 180, 166, 0.3);
+        color: var(--teal);
+      }
+
+      .alert-box.show {
+        display: block;
+      }
+
+      /* Strength bar (register) */
+      .pw-strength-bar {
+        height: 3px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.08);
+        margin-top: 8px;
+        overflow: hidden;
+      }
+
+      .pw-strength-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        width: 0%;
+        transition:
+          width 0.3s,
+          background 0.3s;
+      }
+
+      .pw-strength-label {
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.4);
+        margin-top: 4px;
+      }
+
+      /* Terms checkbox */
+      .form-check {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-top: 2px;
+      }
+
+      .form-check input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--teal);
+        cursor: pointer;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .form-check label {
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        line-height: 1.5;
+      }
+
+      .form-check label a {
+        color: var(--teal);
+        text-decoration: none;
+      }
+
+      .form-check label a:hover {
+        text-decoration: underline;
+      }
+
+      /* Back link */
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.4);
+        cursor: pointer;
+        margin-top: 16px;
+        transition: color 0.15s;
+        background: none;
+        border: none;
+        font-family: "Poppins", sans-serif;
+      }
+
+      .back-link:hover {
+        color: var(--teal);
+      }
+
+      /* Success circle */
+      .success-circle {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: rgba(0, 180, 166, 0.12);
+        border: 2px solid rgba(0, 180, 166, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--teal);
+        margin: 0 auto 20px;
+      }
+
+      /* ─── RESPONSIVE ─────────────────────────────────────────────── */
+      @media (max-width: 768px) {
+        nav {
+          padding: 0 20px;
+        }
+
+        .nav-links {
+          display: none;
+        }
+
+        .modal-content {
+          padding: 36px 24px 32px;
+        }
+
+        .form-row {
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .about {
+          padding: 60px 24px;
+        }
+      }
+
+      .section-header {
+        text-align: center;
+        max-width: 760px;
+        margin: 0 auto 60px;
+      }
+
+      .section-tag {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(0, 180, 166, 0.1);
+        border: 1px solid rgba(0, 180, 166, 0.25);
+        color: var(--teal);
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin-bottom: 18px;
+      }
+
+      .section-header h2,
+      .features-left h2,
+      .contact-left h2 {
+        font-family: "DM Serif Display", serif;
+        font-size: clamp(2rem, 4vw, 3rem);
+        margin-bottom: 16px;
+      }
+
+      .section-header p,
+      .features-left p,
+      .contact-left p {
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.8;
+      }
+
+      .services,
+      .features,
+      .steps,
+      .contact {
+        padding: 100px 48px;
+      }
+
+      .service-grid,
+      .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+        max-width: 1200px;
+        margin: auto;
+      }
+
+      .service-card,
+      .step-card,
+      .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 32px;
+        backdrop-filter: blur(18px);
+        transition: 0.3s ease;
+      }
+
+      .service-card:hover,
+      .step-card:hover,
+      .glass-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(0, 180, 166, 0.35);
+      }
+
+      .service-icon {
+        width: 62px;
+        height: 62px;
+        border-radius: 18px;
+        background: rgba(0, 180, 166, 0.12);
+        color: var(--teal);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.7rem;
+        margin-bottom: 20px;
+      }
+
+      .service-card h3,
+      .step-card h3 {
+        margin-bottom: 12px;
+        font-size: 1.2rem;
+      }
+
+      .service-card p,
+      .step-card p {
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.7;
+        margin-bottom: 18px;
+      }
+
+      .service-card a {
+        color: var(--teal);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 60px;
+        max-width: 1200px;
+        margin: auto;
+        align-items: center;
+      }
+
+      .feature-list {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        margin-top: 32px;
+      }
+
+      .feature-item {
+        display: flex;
+        gap: 16px;
+      }
+
+      .feature-item ion-icon {
+        color: var(--teal);
+        font-size: 1.5rem;
+        flex-shrink: 0;
+      }
+
+      .feature-item h4 {
+        margin-bottom: 6px;
+      }
+
+      .feature-item p {
+        color: rgba(255, 255, 255, 0.55);
+      }
+
+      .feature-preview-card {
+        padding: 36px;
+      }
+
+      .preview-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 36px;
+      }
+
+      .live-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--teal);
+        box-shadow: 0 0 20px var(--teal);
+      }
+
+      .route-line {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 30px;
+      }
+
+      .route-line .point {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+      }
+
+      .route-line .start {
+        background: #4ade80;
+      }
+
+      .route-line .end {
+        background: #ef4444;
+      }
+
+      .route-line .line {
+        flex: 1;
+        height: 3px;
+        background: linear-gradient(90deg, #4ade80, var(--teal), #ef4444);
+        border-radius: 999px;
+      }
+
+      .preview-bottom {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .step-number {
+        color: var(--teal);
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 16px;
+      }
+
+      .contact-card {
+        max-width: 1200px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        padding: 48px;
+      }
+
+      .contact-info {
+        margin-top: 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        color: rgba(255, 255, 255, 0.75);
+      }
+
+      .contact-info div {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .contact-info ion-icon {
+        color: var(--teal);
+      }
+
+      .contact-form {
+        display: flex;
+        flex-direction: column;
+        margin-top: 15%;
+        gap: 16px;
+      }
+
+      .contact-form input,
+      .contact-form textarea {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--white);
+        font-family: "Poppins", sans-serif;
+      }
+
+      .contact-form textarea {
+        resize: none;
+      }
+
+      .footer {
+        padding: 60px 48px 30px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .footer-top {
+        max-width: 1200px;
+        margin: auto;
+        display: flex;
+        justify-content: space-between;
+        gap: 60px;
+      }
+
+      .footer-desc {
+        max-width: 360px;
+        color: rgba(255, 255, 255, 0.55);
+        line-height: 1.8;
+      }
+
+      .footer-links {
+        display: flex;
+        gap: 80px;
+      }
+
+      .footer-links h4 {
+        margin-bottom: 18px;
+      }
+
+      .footer-links a {
+        display: block;
+        margin-bottom: 12px;
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: none;
+      }
+
+      .footer-links a:hover {
+        color: var(--teal);
+      }
+
+      .footer-bottom {
+        max-width: 1200px;
+        margin: 40px auto 0;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.45);
+        text-align: center;
+      }
+
+      @media (max-width: 900px) {
+        .service-grid,
+        .steps-grid,
+        .features,
+        .contact-card,
+        .footer-top {
+          grid-template-columns: 1fr;
+          display: grid;
+        }
+
+        .footer-links {
+          gap: 40px;
+          flex-wrap: wrap;
+        }
+
+        .services,
+        .features,
+        .steps,
+        .contact,
+        .footer {
+          padding: 80px 24px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ═══ NAV ═══════════════════════════════════════════════════════ -->
+    <nav>
+      <div class="logo">
+        <img
+          src="{% static 'assets/logo.png' %}"
+          onerror="this.style.display = 'none'"
+        />
+        <p><span class="medify">MediFy</span><span class="number">360</span></p>
+      </div>
+
+      <ul class="nav-links">
+        <li><a class="active" href="#">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#contact">Contact Us</a></li>
+      </ul>
+
+      <div class="nav-button" id="loginContainer">
+        <button id="loginBtn">Login</button>
+        <ul class="dropdown-menu">
+          <li>
+            <a href="#" onclick="openModal('Admin', 'login')">
+              <span class="role-icon">A</span>Admin
+            </a>
+          </li>
+          <li>
+            <a href="#" onclick="openModal('Staff', 'login')">
+              <span class="role-icon">S</span>Staff
+            </a>
+          </li>
+          <li>
+            <a href="#" onclick="openModal('Citizen', 'login')">
+              <span class="role-icon">C</span>Citizen
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- ═══ HERO ═══════════════════════════════════════════════════════ -->
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-badge"><span></span>Smart Healthcare Platform</div>
+        <h1>Healthcare Reimagined for <em>Every Citizen</em></h1>
+        <p>
+          MediFy360 connects hospitals, ambulances, and mental health services
+          into one seamless digital ecosystem — built for communities, powered
+          by data.
+        </p>
+        <div class="hero-cta">
+          <button class="btn-primary" onclick="openModal('Citizen', 'login')">
+            Get Started
+          </button>
+          <button class="btn-secondary" onclick="location.href = '#services'">
+            Learn More
+          </button>
+        </div>
+        <div class="stats-strip">
+          <div class="stat">
+            <div class="stat-num">120+</div>
+            <div class="stat-label">Hospitals Onboard</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">50K+</div>
+            <div class="stat-label">Citizens Served</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">99.9%</div>
+            <div class="stat-label">Uptime</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">24/7</div>
+            <div class="stat-label">Emergency Support</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ ABOUT ══════════════════════════════════════════════════════ -->
+    <section class="about" id="about">
+      <div class="about-text">
+        <span class="about-tag">Healthcare Reimagined</span>
+
+        <h1>About MediFy360</h1>
+
+        <p>
+          MediFy360 is a comprehensive digital healthcare platform created to
+          simplify and modernize the way people access medical services. From
+          online appointment booking and real-time ambulance tracking to secure
+          digital records and AI-powered mental health assistance, MediFy360
+          brings every essential healthcare service together in one seamless
+          ecosystem.
+        </p>
+
+        <p>
+          Our mission is to bridge the gap between patients, doctors, hospitals
+          and emergency services through smart technology. By making healthcare
+          faster, safer and more accessible, MediFy360 aims to ensure that
+          quality medical support is always just a few clicks away.
+        </p>
+
+        <div class="about-features">
+          <div class="about-feature">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <span>Smart Appointment Booking</span>
+          </div>
+
+          <div class="about-feature">
+            <ion-icon name="car-outline"></ion-icon>
+            <span>Live Ambulance Tracking</span>
+          </div>
+
+          <div class="about-feature">
+            <ion-icon name="shield-checkmark-outline"></ion-icon>
+            <span>Secure Medical Records</span>
+          </div>
+
+          <div class="about-feature">
+            <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+            <span>AI Mental Health Support</span>
+          </div>
+        </div>
+      </div>
+
+      <img src="{% static 'assets/doctor.png' %}" alt="doctor" />
+    </section>
+
+    <!-- ═══ SERVICES SECTION ═══════════════════════════════════════════ -->
+    <section class="services" id="services">
+      <div class="section-header">
+        <span class="section-tag">Core Services</span>
+        <h2>Everything You Need In One Healthcare Platform</h2>
+        <p>
+          MediFy360 unifies healthcare access, emergency response and mental
+          wellness into a single connected ecosystem.
+        </p>
+      </div>
+
+      <div class="service-grid">
+        <div class="service-card">
+          <div class="service-icon">
+            <ion-icon name="business-outline"></ion-icon>
+          </div>
+          <h3>Hospital Management</h3>
+          <p>
+            Manage patient records, appointments, staff, reports and departments
+            from one dashboard.
+          </p>
+          <a href="#">Explore Service →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">
+            <ion-icon name="car-outline"></ion-icon>
+          </div>
+          <h3>Ambulance Tracking</h3>
+          <p>
+            Track ambulances live, monitor ETA and instantly dispatch emergency
+            response units.
+          </p>
+          <a href="#">Explore Service →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">
+            <ion-icon name="heart-outline"></ion-icon>
+          </div>
+          <h3>Mental Health AI</h3>
+          <p>
+            Provide 24/7 AI-guided mental wellness support, self-check tools and
+            counsellor access.
+          </p>
+          <a href="#">Explore Service →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ FEATURES SECTION ═══════════════════════════════════════════ -->
+    <section class="features">
+      <div class="features-left">
+        <span class="section-tag">Why Choose Us</span>
+        <h2>Built For Citizens, Hospitals And Emergency Teams</h2>
+        <p>
+          Our platform is designed to make healthcare faster, more accessible
+          and easier to manage.
+        </p>
+
+        <div class="feature-list">
+          <div class="feature-item">
+            <ion-icon name="checkmark-circle"></ion-icon>
+            <div>
+              <h4>Secure Medical Records</h4>
+              <p>All records are encrypted and securely stored.</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <ion-icon name="checkmark-circle"></ion-icon>
+            <div>
+              <h4>24/7 Emergency Support</h4>
+              <p>Emergency services remain active at all times.</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <ion-icon name="checkmark-circle"></ion-icon>
+            <div>
+              <h4>Smart Appointment Booking</h4>
+              <p>Book appointments in seconds without waiting in line.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="features-right">
+        <div class="feature-preview-card glass-card">
+          <div class="preview-top">
+            <div>
+              <span>Live Ambulance</span>
+              <h3>ETA: 06 min</h3>
+            </div>
+            <div class="live-dot"></div>
+          </div>
+
+          <div class="route-line">
+            <div class="point start"></div>
+            <div class="line"></div>
+            <div class="point end"></div>
+          </div>
+
+          <div class="preview-bottom">
+            <div>
+              <small>From</small>
+              <p>City Hospital</p>
+            </div>
+            <div>
+              <small>To</small>
+              <p>Citizen Location</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ HOW IT WORKS ═══════════════════════════════════════════════ -->
+    <section class="steps">
+      <div class="section-header">
+        <span class="section-tag">How It Works</span>
+        <h2>Three Simple Steps To Access Better Healthcare</h2>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">01</div>
+          <h3>Create Your Account</h3>
+          <p>Register as a citizen, staff member or administrator.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">02</div>
+          <h3>Choose A Service</h3>
+          <p>
+            Book appointments, track ambulances or access mental health support.
+          </p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">03</div>
+          <h3>Get Instant Support</h3>
+          <p>
+            Receive real-time assistance from hospitals and emergency teams.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ CONTACT SECTION ════════════════════════════════════════════ -->
+    <section class="contact" id="contact">
+      <div class="contact-card glass-card">
+        <div class="contact-left">
+          <span class="section-tag">Contact Us</span>
+          <h2>Need Help Or Want To Partner With MediFy360?</h2>
+          <p>
+            Reach out to our team and we will get back to you as soon as
+            possible.
+          </p>
+
+          <div class="contact-info">
+            <div>
+              <ion-icon name="mail-outline"></ion-icon> support@medify360.com
+            </div>
+            <div><ion-icon name="call-outline"></ion-icon> +91 98765 43210</div>
+            <div>
+              <ion-icon name="location-outline"></ion-icon> Bhubaneswar, Odisha
+            </div>
+          </div>
+        </div>
+
+        <form class="contact-form">
+          <div class="form-row">
+            <input type="text" placeholder="Your Name" required />
+            <input type="email" placeholder="Your Email" required />
+          </div>
+          <input type="text" placeholder="Subject" required />
+          <textarea rows="5" placeholder="Write your message..."></textarea>
+          <button type="submit" class="btn-primary">Send Message</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ═══ FOOTER ═════════════════════════════════════════════════════ -->
+    <footer class="footer">
+      <div class="footer-top">
+        <div>
+          <div class="logo" style="margin-bottom: 16px">
+            <img
+              src="{% static 'assets/logo.png' %}"
+              onerror="this.style.display = 'none'"
+            />
+            <p>
+              <span class="medify">MediFy</span><span class="number">360</span>
+            </p>
+          </div>
+          <p class="footer-desc">
+            A unified digital healthcare platform for hospitals, citizens and
+            emergency services.
+          </p>
+        </div>
+
+        <div class="footer-links">
+          <div>
+            <h4>Platform</h4>
+            <a href="#about">About</a>
+            <a href="#services">Services</a>
+            <a href="#contact">Contact</a>
+          </div>
+
+          <div>
+            <h4>Services</h4>
+            <a href="#">Hospital Management</a>
+            <a href="#">Ambulance Tracking</a>
+            <a href="#">Mental Health AI</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2026 MediFy360. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         MODALS
+    ════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── LOGIN MODAL ─────────────────────────────────────────────── -->
+    <div class="modal" id="modal">
+      <div class="modal-content">
+        <button class="close" onclick="closeModal()" aria-label="Close">
+          <ion-icon name="close"></ion-icon>
+        </button>
+
+        <div class="modal-brand">
+          <div class="modal-brand-dot"></div>
+          <span class="modal-brand-name">MediFy360</span>
+        </div>
+
+        <div class="role-badge" id="loginRoleBadge">Citizen</div>
+        <h2 id="modalTitle">Welcome back</h2>
+        <p class="modal-subtitle">Sign in to access your dashboard</p>
+
+        <div class="alert-box error" id="loginAlert"></div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label>Username or Email</label>
+            <input
+              type="text"
+              id="loginUsername"
+              placeholder="Enter your username or email"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              id="loginPassword"
+              placeholder="Enter your password"
+              required
+            />
+            <span
+              class="toggle-pw"
+              onclick="togglePw('loginPassword', this)"
+            ></span>
+          </div>
+
+          <div class="modal-links" style="margin-top: -4px">
+            <span></span>
+            <a href="#" onclick="switchModal('forgotPassword')"
+              >Forgot Password?</a
+            >
+          </div>
+
+          <button type="submit" class="btn-submit">Sign In</button>
+
+          <div class="or-divider">or</div>
+
+          <div class="modal-links">
+            <span style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.4)"
+              >New to MediFy360?</span
+            >
+            <a href="#" onclick="switchModal('register')">Create account →</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── REGISTER MODAL ──────────────────────────────────────────── -->
+    <div class="modal" id="registerModal">
+      <div
+        class="modal-content"
+        style="max-width: 520px; padding: 32px 40px 36px; margin: auto"
+      >
+        <button class="close" onclick="closeModal()" aria-label="Close">
+          <ion-icon name="close"></ion-icon>
+        </button>
+
+        <div class="modal-brand" style="margin-bottom: 16px">
+          <div class="modal-brand-dot"></div>
+          <span class="modal-brand-name">MediFy360</span>
+        </div>
+
+        <div
+          class="role-badge"
+          id="registerRoleBadge"
+          style="margin-bottom: 12px"
+        >
+          Citizen
+        </div>
+        <h2 style="font-size: 1.6rem; margin-bottom: 4px">Create Account</h2>
+        <p class="modal-subtitle" style="margin-bottom: 16px">
+          Join MediFy360 to access all services
+        </p>
+
+        <div class="alert-box error" id="registerAlert"></div>
+
+        <form
+          id="registerForm"
+          onsubmit="handleRegister(event)"
+          style="gap: 10px"
+        >
+          <div class="form-row" style="gap: 10px">
+            <div class="form-group">
+              <label style="margin-bottom: 4px">First Name</label>
+              <input
+                type="text"
+                id="regFirstName"
+                placeholder="First name"
+                style="padding: 10px 12px"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label style="margin-bottom: 4px">Last Name</label>
+              <input
+                type="text"
+                id="regLastName"
+                placeholder="Last name"
+                style="padding: 10px 12px"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row" style="gap: 10px">
+            <div class="form-group">
+              <label style="margin-bottom: 4px">Username</label>
+              <input
+                type="text"
+                id="regUsername"
+                placeholder="Choose a username"
+                style="padding: 10px 12px"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label style="margin-bottom: 4px">Phone Number</label>
+              <input
+                type="tel"
+                id="regPhone"
+                placeholder="+91 XXXXX XXXXX"
+                style="padding: 10px 12px"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label style="margin-bottom: 4px">Email Address</label>
+            <input
+              type="email"
+              id="regEmail"
+              placeholder="you@example.com"
+              style="padding: 10px 12px"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label style="margin-bottom: 4px">Password</label>
+            <input
+              type="password"
+              id="regPassword"
+              placeholder="Create a strong password"
+              style="padding: 10px 12px"
+              required
+              oninput="checkStrength(this.value)"
+            />
+            <span
+              class="toggle-pw"
+              onclick="togglePw('regPassword', this)"
+            ></span>
+            <div class="pw-strength-bar" style="margin-top: 4px">
+              <div class="pw-strength-bar-fill" id="strengthFill"></div>
+            </div>
+            <div
+              class="pw-strength-label"
+              style="margin-top: 2px; font-size: 0.65rem"
+            >
+              Password strength
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label style="margin-bottom: 4px">Confirm Password</label>
+            <input
+              type="password"
+              id="regConfirmPassword"
+              placeholder="Re-enter your password"
+              style="padding: 10px 12px"
+              required
+            />
+            <span
+              class="toggle-pw"
+              onclick="togglePw('regConfirmPassword', this)"
+            ></span>
+          </div>
+
+          <div class="form-check" style="margin-top: 4px">
+            <input type="checkbox" id="agreeTerms" required />
+            <label for="agreeTerms" style="font-size: 0.7rem"
+              >I agree to the <a href="#">Terms of Service</a> and
+              <a href="#">Privacy Policy</a></label
+            >
+          </div>
+
+          <button
+            type="submit"
+            class="btn-submit"
+            style="padding: 10px; margin-top: 4px"
+          >
+            Create Account
+          </button>
+
+          <div class="modal-links" style="margin-top: 8px">
+            <span style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.4)"
+              >Already have an account?</span
+            >
+            <a href="#" onclick="switchToLogin()" style="font-size: 0.75rem"
+              >Sign in →</a
+            >
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── FORGOT PASSWORD MODAL ───────────────────────────────────── -->
+    <div class="modal" id="forgotModal">
+      <div class="modal-content" style="max-width: 400px">
+        <button class="close" onclick="closeModal()" aria-label="Close">
+          <ion-icon name="close"></ion-icon>
+        </button>
+
+        <div class="modal-brand">
+          <div class="modal-brand-dot"></div>
+          <span class="modal-brand-name">MediFy360</span>
+        </div>
+
+        <!-- Step 1: Enter email -->
+        <div id="forgotStep1">
+          <h2 style="margin-bottom: 4px">Reset Password</h2>
+          <p class="modal-subtitle">
+            We'll send a verification code to your email
+          </p>
+
+          <div class="alert-box error" id="forgotAlert"></div>
+
+          <form onsubmit="handleForgotStep1(event)" style="margin-top: 0">
+            <div class="form-group">
+              <label>Registered Email</label>
+              <input
+                type="email"
+                id="forgotEmail"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <button type="submit" class="btn-submit">Send OTP</button>
+            <div
+              class="modal-links"
+              style="justify-content: center; margin-top: 12px"
+            >
+              <a href="#" onclick="switchModal('login')">← Back to Login</a>
+            </div>
+          </form>
+        </div>
+
+        <!-- Step 2: Enter OTP -->
+        <div id="forgotStep2" style="display: none">
+          <h2 style="margin-bottom: 4px">Enter OTP</h2>
+          <p class="modal-subtitle">
+            A 6-digit code was sent to
+            <span id="sentTo" style="color: var(--teal)"></span>
+          </p>
+
+          <form onsubmit="handleForgotStep2(event)" style="margin-top: 0">
+            <div class="form-group">
+              <label>Verification Code</label>
+              <input
+                type="text"
+                id="otpInput"
+                placeholder="000000"
+                maxlength="6"
+                style="
+                  letter-spacing: 0.2em;
+                  font-size: 1.2rem;
+                  text-align: center;
+                "
+                required
+              />
+            </div>
+            <button type="submit" class="btn-submit">Verify Code</button>
+            <div
+              class="modal-links"
+              style="justify-content: center; margin-top: 12px"
+            >
+              <a href="#" onclick="showForgotStep(1)">Resend code</a>
+            </div>
+          </form>
+        </div>
+
+        <!-- Step 3: New password -->
+        <div id="forgotStep3" style="display: none">
+          <h2 style="margin-bottom: 4px">New Password</h2>
+          <p class="modal-subtitle">Choose a strong new password</p>
+
+          <div class="alert-box error" id="newPwAlert"></div>
+
+          <form onsubmit="handleForgotStep3(event)" style="margin-top: 0">
+            <div class="form-group">
+              <label>New Password</label>
+              <input
+                type="password"
+                id="newPassword"
+                placeholder="New password"
+                required
+                oninput="
+                  checkStrength(this.value, 'strengthFill2', 'strengthLabel2')
+                "
+              />
+              <span
+                class="toggle-pw"
+                onclick="togglePw('newPassword', this)"
+              ></span>
+              <div class="pw-strength-bar">
+                <div class="pw-strength-bar-fill" id="strengthFill2"></div>
+              </div>
+              <div class="pw-strength-label" id="strengthLabel2">
+                Password strength
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Confirm Password</label>
+              <input
+                type="password"
+                id="newPasswordConfirm"
+                placeholder="Confirm new password"
+                required
+              />
+              <span
+                class="toggle-pw"
+                onclick="togglePw('newPasswordConfirm', this)"
+              ></span>
+            </div>
+            <button type="submit" class="btn-submit">Reset Password</button>
+          </form>
+        </div>
+
+        <!-- Step 4: Success -->
+        <div id="forgotStep4" style="display: none; text-align: center">
+          <div class="success-circle">
+            <ion-icon name="checkmark-outline"></ion-icon>
+          </div>
+          <h2>All Done!</h2>
+          <p class="modal-subtitle" style="margin-bottom: 24px">
+            Your password has been reset successfully. You can now sign in with
+            your new password.
+          </p>
+          <button
+            class="btn-submit"
+            style="width: 100%"
+            onclick="switchModal('login')"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SCRIPTS ───────────────────────────────────────────────── -->
+    <script>
+      const navLinks = document.querySelectorAll(".nav-links a");
+
+      navLinks.forEach((link) => {
+        link.addEventListener("click", function () {
+          navLinks.forEach((l) => l.classList.remove("active"));
+          this.classList.add("active");
+        });
+      });
+
+      /* ── Nav dropdown ── */
+      const loginBtn = document.getElementById("loginBtn");
+      const container = document.getElementById("loginContainer");
+
+      loginBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        container.classList.toggle("active");
+      });
+      document.addEventListener("click", () =>
+        container.classList.remove("active"),
+      );
+
+      /* ── Modal management ── */
+      let currentRole = "Citizen";
+      const allModals = ["modal", "registerModal", "forgotModal"];
+
+      function openModal(role, type = "login") {
+        currentRole = role;
+        container.classList.remove("active");
+
+        allModals.forEach((id) =>
+          document.getElementById(id).classList.remove("active"),
+        );
+        clearAlerts();
+
+        if (type === "login") {
+          document.getElementById("modalTitle").innerText = "Welcome back";
+          document.getElementById("loginRoleBadge").innerText = role;
+          document.getElementById("modal").classList.add("active");
+        } else if (type === "register") {
+          document.getElementById("registerRoleBadge").innerText = role;
+          document.getElementById("registerModal").classList.add("active");
+        }
+      }
+
+      function switchModal(target) {
+        allModals.forEach((id) =>
+          document.getElementById(id).classList.remove("active"),
+        );
+        clearAlerts();
+
+        if (target === "login") {
+          document.getElementById("loginRoleBadge").innerText = currentRole;
+          document.getElementById("modal").classList.add("active");
+        } else if (target === "register") {
+          document.getElementById("registerRoleBadge").innerText = currentRole;
+          document.getElementById("registerModal").classList.add("active");
+        } else if (target === "forgotPassword") {
+          document.getElementById("forgotModal").classList.add("active");
+          showForgotStep(1);
+        }
+      }
+
+      function closeModal() {
+        allModals.forEach((id) =>
+          document.getElementById(id).classList.remove("active"),
+        );
+        clearAlerts();
+      }
+
+      document.querySelectorAll(".modal").forEach((m) => {
+        m.addEventListener("click", (e) => {
+          if (e.target === m) closeModal();
+        });
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeModal();
+      });
+
+      function showAlert(id, msg, type = "error") {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.className = `alert-box ${type} show`;
+        el.innerText = msg;
+      }
+      function clearAlerts() {
+        document.querySelectorAll(".alert-box").forEach((el) => {
+          el.classList.remove("show");
+          el.innerText = "";
+        });
+      }
+
+      function handleLogin(e) {
+        e.preventDefault();
+
+        const username = document.getElementById("loginUsername").value;
+        const password = document.getElementById("loginPassword").value;
+
+        fetch("/login/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: `username=${username}&password=${password}&role=${currentRole}`,
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("LOGIN RESPONSE:", data);
+            if (data.status === "success") {
+              window.location.href = data.redirect;
+            } else {
+              alert(data.message);
+            }
+          });
+      }
+
+      function handleRegister(e) {
+        e.preventDefault();
+
+        const username = document.getElementById("regUsername").value;
+        const email = document.getElementById("regEmail").value;
+        const password = document.getElementById("regPassword").value;
+
+        fetch("/register/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: `username=${username}&email=${email}&password=${password}`,
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === "success") {
+              alert("Account created successfully");
+              switchToLogin();
+            } else {
+              alert(data.message);
+            }
+          });
+      }
+
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1),
+              );
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+      function showForgotStep(n) {
+        for (let i = 1; i <= 4; i++) {
+          const el = document.getElementById("forgotStep" + i);
+          if (el) {
+            el.style.display = i === n ? "block" : "none";
+          }
+        }
+
+        console.log("Switched to step:", n); // 🔥 DEBUG
+      }
+      function handleForgotStep1(e) {
+        e.preventDefault();
+
+        const email = document.getElementById("forgotEmail").value.trim();
+
+        fetch("/send-otp/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: `email=${email}`,
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === "success") {
+              document.getElementById("sentTo").innerText = email;
+              showForgotStep(2);
+            } else {
+              showAlert("forgotAlert", data.message);
+            }
+          });
+      }
+      function handleForgotStep2(e) {
+        e.preventDefault();
+
+        const email = document.getElementById("forgotEmail").value.trim();
+        const otp = document.getElementById("otpInput").value.trim();
+
+        console.log("OTP ENTERED:", otp);
+
+        fetch("/verify-otp/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: `email=${email}&otp=${otp}`,
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("VERIFY RESPONSE:", data); // 🔥 DEBUG
+
+            if (data.status === "success") {
+              clearAlerts(); // ✅ IMPORTANT
+              showForgotStep(3); // ✅ move to password screen
+            } else {
+              showAlert("forgotAlert", data.message);
+            }
+          });
+      }
+      function handleForgotStep3(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('forgotEmail').value.trim();
+    const pw = document.getElementById('newPassword').value;
+    const cf = document.getElementById('newPasswordConfirm').value;
+
+    if (pw !== cf) return showAlert('newPwAlert', 'Passwords do not match.');
+    if (pw.length < 8) return showAlert('newPwAlert', 'Password must be at least 8 characters.');
+
+    fetch('/reset-password-otp/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: `email=${email}&password=${pw}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+
+            // 🔥 VERY IMPORTANT FIX
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginUsername').value = '';
+
+            showForgotStep(4);
+        } else {
+            showAlert('newPwAlert', 'Something went wrong');
+        }
+    });
+}
+
+      function checkStrength(
+        pw,
+        fillId = "strengthFill",
+        labelId = "strengthLabel",
+      ) {
+        const fill = document.getElementById(fillId);
+        const label = document.getElementById(labelId);
+        if (!fill || !label) return;
+        let score = 0;
+        if (pw.length >= 8) score++;
+        if (/[A-Z]/.test(pw)) score++;
+        if (/[0-9]/.test(pw)) score++;
+        if (/[^A-Za-z0-9]/.test(pw)) score++;
+        const pct = ["0%", "25%", "50%", "75%", "100%"];
+        const colors = ["", "#e84b6a", "#f59e0b", "#3b82f6", "#00B4A6"];
+        const labels = ["", "Weak", "Fair", "Good", "Strong"];
+        fill.style.width = pct[score];
+        fill.style.background = colors[score];
+        label.innerText = score ? labels[score] : "Password strength";
+        label.style.color = colors[score] || "rgba(255,255,255,0.4)";
+      }
+
+      document.querySelectorAll('a[href^="#"]').forEach((link) => {
+        link.addEventListener("click", function (e) {
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            e.preventDefault();
+            target.scrollIntoView({ behavior: "smooth" });
+          }
+        });
+      });
+
+      const contactForm = document.querySelector(".contact-form");
+      if (contactForm) {
+        contactForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const btn = contactForm.querySelector("button");
+          btn.innerText = "Sending...";
+          setTimeout(() => {
+            btn.innerText = "Message Sent ✓";
+            btn.style.background = "#00D4C4";
+            contactForm.reset();
+            setTimeout(() => {
+              btn.innerText = "Send Message";
+              btn.style.background = "";
+            }, 2500);
+          }, 1200);
+        });
+      }
+      function switchToLogin() {
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginUsername').value = '';
+    switchModal('login');
+}
+    </script>
+
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"
+    ></script>
+  </body>
+</html>

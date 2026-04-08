@@ -1,0 +1,2864 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <link
+      rel="icon"
+      href="{% static 'assets/logo.png' %}"
+      type="image/png"
+      sizes="48x48"
+    />
+    <title>Medify360 | Admin Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --navy: #0a1927; /* Primary dark background */
+        --navy-light: #11212e; /* Slightly lighter for cards */
+        --accent: #00b8a9; /* Teal accent */
+        --accent-light: #2dd4bf;
+        --accent-dark: #009688;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --success: #10b981;
+        --gray-50: #e2e8f0; /* Light text on dark */
+        --gray-100: #cbd5e1;
+        --gray-200: #94a3b8;
+        --gray-300: #64748b;
+        --gray-600: #94a3b8;
+        --gray-700: #cbd5e1;
+        --gray-800: #e2e8f0;
+        --gray-900: #f1f5f9;
+        --card-bg: #11212e; /* Card background */
+        --sidebar-bg: #07141c; /* Slightly darker sidebar */
+        --border-light: #1e2a36;
+        --white: #ffffff;
+        --teal: #00b8a9;
+      }
+      body {
+        font-family:
+          "Inter", sans-serif; /* Changed to Poppins as per home page */
+        background: var(--navy);
+        color: var(--gray-900);
+        overflow-x: hidden;
+      }
+      .admin-container {
+        display: flex;
+        min-height: 100vh;
+      }
+      .sidebar {
+        width: 280px;
+        background: var(--sidebar-bg);
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+        z-index: 100;
+        transition: all 0.3s;
+        box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .sidebar-nav {
+        flex: 1;
+      }
+      .sidebar-footer {
+        padding: 20px 16px 28px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        margin-top: auto;
+      }
+      .sidebar-header {
+        padding: 28px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        margin-bottom: 24px;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .logo img {
+        width: 50px;
+        height: 38px;
+        border-radius: 8px;
+        padding: 4px;
+      }
+      .logo p {
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+      .medify {
+        color: var(--white);
+      }
+      .number {
+        color: var(--teal);
+      }
+      .nav-item {
+        padding: 14px 24px;
+        margin: 6px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .nav-item i {
+        width: 24px;
+        font-size: 1.2rem;
+      }
+      .nav-item:hover {
+        background: rgba(0, 184, 169, 0.15);
+        color: var(--accent);
+      }
+      .nav-item.active {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 184, 169, 0.2),
+          rgba(0, 184, 169, 0.05)
+        );
+        color: var(--accent);
+        border-left: 3px solid var(--accent);
+      }
+      .logout-btn {
+        padding: 14px 24px;
+        margin: 0 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: rgba(255, 255, 255, 0.7);
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+      .logout-btn:hover {
+        background: rgba(239, 68, 68, 0.25);
+        color: #ff8a8a;
+        transform: translateY(-1px);
+      }
+      .main-content {
+        margin-left: 280px;
+        flex: 1;
+        padding: 32px 40px;
+        width: calc(100% - 280px);
+        background: var(--navy-light);
+        color: var(--gray-900);
+      }
+
+      /* Stats Cards - dark theme */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 28px;
+        margin-bottom: 40px;
+      }
+      .stat-card {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border-light);
+        transition: all 0.2s;
+        color: var(--gray-900);
+      }
+      .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+      }
+      .stat-icon {
+        width: 54px;
+        height: 54px;
+        background: linear-gradient(
+          135deg,
+          rgba(0, 184, 169, 0.2),
+          rgba(0, 184, 169, 0.1)
+        );
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      .stat-icon i {
+        font-size: 28px;
+        color: var(--accent);
+      }
+      .stat-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: var(--white);
+        margin-bottom: 8px;
+      }
+      .stat-label {
+        color: var(--gray-300);
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      .section-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--white);
+      }
+
+      /* Cards for citizens and doctors */
+      .grid-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 28px;
+        margin-bottom: 40px;
+      }
+      .doctor-card,
+      .citizen-card {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 0px;
+        border: 1px solid var(--border-light);
+        transition: all 0.3s;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        color: var(--gray-900);
+        overflow: hidden;
+      }
+      .doctor-card:hover,
+      .citizen-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+      }
+      .doctor-card h3,
+      .citizen-card h3 {
+        font-size: 1.35rem;
+        margin-bottom: 14px;
+        font-weight: 700;
+        color: var(--white);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .doctor-card p,
+      .citizen-card p {
+        margin-bottom: 12px;
+        line-height: 1.5;
+        color: var(--gray-300);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .doctor-card p i,
+      .citizen-card p i {
+        width: 22px;
+        color: var(--accent);
+      }
+      .doctor-card div,
+      .citizen-card div {
+        margin-top: 20px;
+        display: flex;
+        gap: 12px;
+      }
+
+      /* Tables - dark theme */
+      .data-table {
+        background: var(--card-bg);
+        border-radius: 20px;
+        overflow-x: auto;
+        border: 1px solid var(--border-light);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        margin-bottom: 32px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        padding: 16px 20px;
+        text-align: left;
+        font-weight: 600;
+        color: var(--gray-200);
+        background: rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid var(--border-light);
+        font-size: 0.875rem;
+      }
+      td {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-light);
+        color: var(--gray-300);
+        font-size: 0.875rem;
+      }
+      tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      /* Badges - adjusted for dark mode */
+      .badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+      }
+      .badge-pending {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--warning);
+      }
+      .badge-success {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+      }
+      .badge-onway {
+        background: rgba(0, 184, 169, 0.2);
+        color: var(--accent);
+      }
+      .badge-confirmed {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+      }
+
+      /* Modal Styles - dark theme */
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.25s ease;
+      }
+      .modal.active {
+        opacity: 1;
+        visibility: visible;
+      }
+      .modal-content {
+        background: var(--card-bg);
+        border-radius: 28px;
+        padding: 32px;
+        width: 90%;
+        max-width: 550px;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        transform: scale(0.95);
+        transition: transform 0.25s ease;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        color: var(--gray-900);
+      }
+      .modal.active .modal-content {
+        transform: scale(1);
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .modal-header h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--white);
+      }
+      .close-modal {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--gray-400);
+        transition: color 0.2s;
+      }
+      .close-modal:hover {
+        color: var(--danger);
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--gray-300);
+        font-size: 0.875rem;
+      }
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 12px 16px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--border-light);
+        border-radius: 12px;
+        font-family: "Inter", sans-serif;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        color: var(--white);
+      }
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(0, 184, 169, 0.2);
+      }
+      .modal-footer {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border-light);
+      }
+
+      /* Billing Form Styles */
+      .billing-form-container {
+        background: var(--card-bg);
+        border-radius: 28px;
+        padding: 32px;
+        margin-bottom: 48px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border-light);
+      }
+      .form-section {
+        margin-bottom: 32px;
+        border-bottom: 1px solid var(--border-light);
+        padding-bottom: 28px;
+      }
+      .form-section:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      .form-section h3 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .form-section h3 i {
+        color: var(--accent);
+        font-size: 1.2rem;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+      }
+      .form-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: flex-end;
+        margin-top: 28px;
+      }
+
+      /* Buttons - dark theme */
+      .btn-primary {
+        background: var(--accent);
+        color: var(--white);
+        padding: 10px 24px;
+        border-radius: 10px;
+        border: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+      }
+      .btn-primary:hover {
+        background: var(--accent-dark);
+        transform: translateY(-1px);
+      }
+      .btn-secondary {
+        background: var(--gray-300);
+        color: var(--gray-900);
+        padding: 8px 20px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      .btn-secondary:hover {
+        background: var(--gray-200);
+      }
+      .btn-danger {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--danger);
+        padding: 6px 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        cursor: pointer;
+        font-weight: 500;
+      }
+      .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.3);
+      }
+      .btn-warning {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--warning);
+        padding: 6px 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        cursor: pointer;
+      }
+      .btn-success {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+        padding: 6px 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        cursor: pointer;
+      }
+
+      /* ===== SMALL SCREEN: ICON-ONLY SIDEBAR, NO BACKGROUND EFFECTS ===== */
+      @media (max-width: 768px) {
+        .sidebar {
+          width: 70px;
+        }
+        .sidebar .nav-item span,
+        .sidebar .logout-btn span,
+        .sidebar .logo p {
+          display: none;
+        }
+        .nav-item {
+          padding: 12px 0;
+          margin: 4px 12px;
+          justify-content: center;
+          gap: 0;
+          background: transparent !important;
+          border-left: none !important;
+        }
+        .nav-item i {
+          width: auto;
+          font-size: 1.4rem;
+          margin: 0;
+        }
+        .sidebar-header {
+          padding: 20px 0;
+          display: flex;
+          justify-content: center;
+        }
+        .logo {
+          justify-content: center;
+          gap: 0;
+        }
+        .logo img {
+          width: 40px;
+          height: 32px;
+        }
+        .logout-btn {
+          padding: 0;
+          margin: 0 12px;
+          justify-content: center;
+          gap: 0;
+          background: transparent !important;
+          border: none !important;
+          border-radius: 12px;
+        }
+        .main-content {
+          margin-left: 70px;
+          width: calc(100% - 70px);
+          padding: 20px;
+        }
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+        .grid-cards {
+          grid-template-columns: 1fr;
+        }
+
+        /* HOVER & ACTIVE: ONLY COLOR CHANGE, NO BACKGROUND */
+        .nav-item:hover {
+          background: transparent !important;
+          color: var(--accent) !important;
+        }
+        .nav-item:hover i {
+          color: var(--accent);
+        }
+        .nav-item.active {
+          background: transparent !important;
+          color: var(--accent) !important;
+          border-left: none !important;
+          box-shadow: none;
+        }
+        .nav-item.active i {
+          color: var(--accent);
+        }
+        .logout-btn:hover {
+          background: transparent !important;
+          color: #ff8a8a !important;
+          border: none !important;
+          transform: none;
+        }
+        .logout-btn:hover i {
+          color: #ff8a8a;
+        }
+        .logout-btn:focus,
+        .logout-btn:active {
+          border: none !important;
+          outline: none !important;
+          box-shadow: none !important;
+        }
+      }
+      /* extra small devices */
+      @media (max-width: 480px) {
+        .sidebar {
+          width: 60px;
+        }
+        .main-content {
+          margin-left: 60px;
+          width: calc(100% - 60px);
+          padding: 16px;
+        }
+        .nav-item {
+          margin: 4px 8px;
+        }
+        .logout-btn {
+          margin: 0 8px;
+        }
+      }
+      /* Remove focus outline for all buttons */
+      .logout-btn:focus,
+      .logout-btn:active {
+        outline: none;
+        box-shadow: none;
+      }
+      .doctor-img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 12px;
+        transition: 0.3s ease;
+      }
+
+      .doctor-card:hover .doctor-img {
+        transform: scale(1.05);
+      }
+       </style>
+  </head>
+
+  <body>
+    <div class="admin-container">
+      <div class="sidebar">
+        <div>
+          <div class="sidebar-header">
+            <div class="logo">
+              <img
+                src="{% static 'assets/logo.png' %}"
+                onerror="this.style.display = 'none'"
+              />
+              <p>
+                <span class="medify">MediFy</span
+                ><span class="number">360</span>
+              </p>
+            </div>
+          </div>
+          <div class="sidebar-nav">
+            <div class="nav-item active" data-section="dashboard">
+              <i class="fas fa-chart-line"></i><span>Dashboard</span>
+            </div>
+            <div class="nav-item" data-section="citizens">
+              <i class="fas fa-users"></i><span>Citizens</span>
+            </div>
+            <div class="nav-item" data-section="doctors">
+              <i class="fas fa-user-md"></i><span>Doctors</span>
+            </div>
+            <div class="nav-item" data-section="appointments">
+              <i class="fas fa-calendar-alt"></i><span>Appointments</span>
+            </div>
+           <div class="nav-item" data-section="staff">
+    <i class="fas fa-user"></i><span>Staff</span>
+</div>
+
+<div class="nav-item" data-section="driver">
+    <i class="fas fa-car"></i><span>Driver</span>
+</div>
+<div class="nav-item" data-section="requests">
+    <i class="fas fa-bell"></i><span>Requests</span>
+</div>
+            <div class="nav-item" data-section="billing">
+              <i class="fas fa-file-invoice-dollar"></i><span>OPD Billing</span>
+            </div>
+          </div>
+        </div>
+        <div class="sidebar-footer">
+          <div class="logout-btn" id="logoutButton">
+            <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+          </div>
+        </div>
+      </div>
+      <div class="main-content" id="mainContent"></div>
+    </div>
+
+    <!-- Modals (unchanged) -->
+    <div id="doctorModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Add / Edit Doctor</h3>
+          <button class="close-modal" onclick="closeModal('doctorModal')">
+            &times;
+          </button>
+        </div>
+        <input type="hidden" id="docId" />
+        <div class="form-group">
+          <label>Full Name</label
+          ><input type="text" id="docName" placeholder="Dr. John Smith" />
+        </div>
+        <div class="form-group">
+          <label>Specialty</label
+          ><input type="text" id="docSpecialty" placeholder="Cardiologist" />
+        </div>
+        <div class="form-group">
+          <label>Experience (years)</label
+          ><input type="text" id="docExp" placeholder="12" />
+        </div>
+        <div class="form-group">
+          <label>Phone</label
+          ><input type="text" id="docPhone" placeholder="+1234567890" />
+        </div>
+        <div class="form-group">
+          <label>Doctor Image</label>
+          <input type="file" id="docImage" />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeModal('doctorModal')">
+            Cancel</button
+          ><button class="btn-primary" onclick="saveDoctor()">
+            Save Doctor
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="timingModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Set Doctor Timings</h3>
+          <button class="close-modal" onclick="closeModal('timingModal')">
+            &times;
+          </button>
+        </div>
+
+        <!-- Doctor -->
+        <div class="form-group">
+          <label>Select Doctor</label>
+          <select id="timingDoctorId"></select>
+        </div>
+
+        <!-- 🔥 ADD THIS -->
+        <div class="form-group">
+          <label>Timing Type</label>
+          <select id="timingType">
+            <option value="REGULAR">Regular</option>
+            <option value="CUSTOM">Custom</option>
+          </select>
+        </div>
+
+        <!-- Time -->
+        <div class="form-group">
+          <label>Start Time</label>
+          <input type="time" id="startTime" />
+        </div>
+
+        <div class="form-group">
+          <label>End Time</label>
+          <input type="time" id="endTime" />
+        </div>
+
+        <!-- 🔥 PASTE YOUR CODE HERE -->
+        <div id="customFields" style="display: none">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" id="startDate" />
+          </div>
+
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" id="endDate" />
+          </div>
+
+          <div class="form-group">
+            <label>Booking Start</label>
+            <input type="datetime-local" id="bookingStart" />
+          </div>
+
+          <div class="form-group">
+            <label>Booking End</label>
+            <input type="datetime-local" id="bookingEnd" />
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeModal('timingModal')">
+            Cancel
+          </button>
+          <button class="btn-primary" onclick="saveTiming()">Set Timing</button>
+        </div>
+      </div>
+    </div>
+    <div id="citizenModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Add New Citizen</h3>
+          <button class="close-modal" onclick="closeModal('citizenModal')">
+            &times;
+          </button>
+        </div>
+        <div class="form-group">
+          <label>Full Name</label
+          ><input type="text" id="citizenName" placeholder="John Doe" />
+        </div>
+        <div class="form-group">
+          <label>Username</label
+          ><input type="text" id="citizenUsername" placeholder="john123" />
+        </div>
+        <div class="form-group">
+          <label>Password</label
+          ><input type="password" id="citizenPassword" placeholder="••••••••" />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeModal('citizenModal')">
+            Cancel</button
+          ><button class="btn-primary" onclick="addCitizen()">
+            Register Citizen
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="driverModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Verify Driver License</h3>
+          <button class="close-modal" onclick="closeModal('driverModal')">
+            &times;
+          </button>
+        </div>
+        <input type="hidden" id="driverIdx" />
+        <div class="form-group">
+          <label>Driver</label>
+          <p
+            id="driverNameDisplay"
+            style="
+              padding: 10px;
+              background: var(--gray-50);
+              border-radius: 8px;
+            "
+          ></p>
+        </div>
+        <div class="form-group">
+          <label>License Number</label
+          ><input type="text" id="licenseNumber" placeholder="DL987654321" />
+        </div>
+        <div class="form-group">
+          <label>ID Proof (Aadhar/Passport)</label
+          ><input
+            type="text"
+            id="idProof"
+            placeholder="Aadhar: XXXX-XXXX-XXXX"
+          />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeModal('driverModal')">
+            Cancel</button
+          ><button class="btn-primary" onclick="verifyDriver()">
+            Verify & Approve
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="slotModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Create Appointment Slot</h3>
+          <button class="close-modal" onclick="closeModal('slotModal')">
+            &times;
+          </button>
+        </div>
+        <div class="form-group">
+          <label>Patient Name</label
+          ><input type="text" id="slotPatient" placeholder="Patient name" />
+        </div>
+        <div class="form-group">
+          <label>Doctor Name</label>
+          <select id="slotDoctor" onchange="handleDoctorSelection()"></select>
+        </div>
+        <div class="form-group">
+          <label>Date</label><input type="date" id="slotDate" readonly />
+        </div>
+        <div class="form-group">
+          <label>Time</label
+          ><input type="text" id="slotTime" placeholder="10:00 AM" readonly />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeModal('slotModal')">
+            Cancel</button
+          ><button class="btn-primary" onclick="createAppointmentSlot()">
+            Create Slot
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+            // ---------- Data ----------
+            
+  function loadTodayVisitors() {
+
+    fetch("/get-today-opd-bills/")
+    .then(res => res.json())
+    .then(data => {
+
+        let html = data.bills.map(b => `
+            <tr>
+                <td>${b.serial}</td>
+                <td>${b.patient}</td>
+                <td>${b.doctor}</td>
+                <td>₹${b.amount}</td>
+<td>
+    <button onclick="editBill(${b.id})">Edit</button>
+    <button onclick="deleteBill(${b.id})">Delete</button>
+</td>
+            </tr>
+        `).join("");
+
+        document.getElementById("todayVisitorsContainer").innerHTML = `
+    <table>
+        <thead>
+            <tr>
+                <th>Serial</th>
+                <th>Name</th>
+                <th>Doctor</th>
+                <th>Amount</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>${html}</tbody>
+    </table>
+`;
+    });
+}          
+          function handleDoctorChange() {
+
+    let doctorId = document.getElementById("doctorName").value;
+    if (!doctorId) return;
+
+    let today = getTodayStr();
+    document.getElementById("opdDate").value = today;
+
+    // 🔥 CALL BACKEND FOR SERIAL
+    fetch(`/get-serial/?doctor_id=${doctorId}&date=${today}`)
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("serialNumber").value = data.serial;
+    });
+
+    // 🔥 SET DEPARTMENT
+    let doctor = doctors.find(d => d.id == doctorId);
+    if (doctor) {
+        document.getElementById("department").value = doctor.specialty;
+    }
+}
+            let citizens = [];
+      let doctors = [];
+            function addCitizen() {
+          let name = document.getElementById("citizenName").value;
+          let username = document.getElementById("citizenUsername").value;
+          let password = document.getElementById("citizenPassword").value;
+
+          fetch("/add-citizen/", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                  name: name,
+                  username: username,
+                  password: password
+              })
+          })
+          .then(res => res.json())
+          .then(data => {
+              if (data.status === "success") {
+                  alert("Citizen added ✅");
+                  closeModal("citizenModal");
+                  loadCitizens();   // 🔥 reload data
+              } else {
+                  alert(data.message);
+              }
+          });
+      }
+
+      function loadCitizens() {
+          fetch("/get-citizens/")
+          .then(res => res.json())
+          .then(data => {
+
+              citizens = data.citizens;
+
+              let html = `
+              <div class="section-header">
+                  <h2 class="section-title">Citizen Management</h2>
+                  <button class="btn-primary" onclick="openModal('citizenModal')">
+                      <i class="fas fa-plus"></i> Add Citizen
+                  </button>
+              </div>
+
+              <div class="grid-cards">
+              ${citizens.map(c => `
+                  <div class="citizen-card">
+
+                      <h3><i class="fas fa-user-circle"></i> ${c.username}</h3>
+
+                      <p><i class="fas fa-at"></i> ${c.email || "@no-email"}</p>
+
+                      <p>
+                          <i class="fas fa-star" style="color:gold"></i>
+                          Avg Rating: ${c.avgRating || 0} / 5
+                      </p>
+
+                      <p>
+                          <i class="fas fa-comment"></i>
+                          Feedbacks: ${c.feedbackCount || 0}
+                      </p>
+
+                      <div>
+                          <button class="btn-danger" onclick="deleteCitizen(${c.id})">
+                              <i class="fas fa-trash"></i> Remove
+                          </button>
+                      </div>
+
+                  </div>
+              `).join("")}
+              </div>
+              `;
+
+              document.getElementById("mainContent").innerHTML = html;
+          });
+      }
+
+      function deleteCitizen(id) {
+          fetch(`/delete-citizen/${id}/`, {
+              method: "POST"
+          })
+          .then(res => res.json())
+          .then(data => {
+              if (data.status === "success") {
+                  loadCitizens();
+              } else {
+                  alert(data.message);
+              }
+          });
+      }
+            let appointments =[];
+
+            let ambulanceDrivers =[];
+
+            let feedbacks =[];
+
+           
+
+
+            function updateCitizenRatings() {
+              citizens.forEach((cit) => {
+                let userFeedbacks = feedbacks.filter((fb) => fb.patient === cit.name);
+                let avg = userFeedbacks.length
+                  ? (
+                      userFeedbacks.reduce((a, b) => a + b.rating, 0) /
+                      userFeedbacks.length
+                    ).toFixed(1)
+                  : 0;
+                cit.avgRating = avg;
+                cit.ratings = userFeedbacks.map((f) => f.rating);
+              });
+            }
+
+            function closeModal(modalId) {
+              document.getElementById(modalId).classList.remove("active");
+            }
+            function openModal(modalId) {
+          document.getElementById(modalId).classList.add("active");
+
+
+
+          // 🔥 load doctors for timing dropdown
+          if (modalId === "timingModal") {
+
+          fetch("/get-doctors/")
+          .then(res => res.json())
+          .then(data => {
+
+              let sel = document.getElementById("timingDoctorId");
+
+              sel.innerHTML = `<option value="">Select Doctor</option>`;
+
+              data.doctors.forEach(d => {
+                  let option = document.createElement("option");
+                  option.value = d.id;
+                  option.textContent = d.name;
+                  sel.appendChild(option);
+              });
+
+          })
+          .catch(err => console.log("Error loading doctors:", err));
+      }
+
+          // 🔥 load doctors for appointment dropdown
+          if (modalId === "slotModal") {
+              fetch("/get-doctors/")
+              .then(res => res.json())
+              .then(data => {
+                  let sel = document.getElementById("slotDoctor");
+
+                  sel.innerHTML = `<option value="">Select Doctor</option>` +
+                      data.doctors.map(d =>
+                          `<option value="${d.id}">${d.name}</option>`
+                      ).join("");
+              });
+          }
+      }
+
+      function saveTiming() {
+
+          let doctorId = document.getElementById("timingDoctorId").value;
+          let type = document.getElementById("timingType").value;
+          let startTime = document.getElementById("startTime").value;
+          let endTime = document.getElementById("endTime").value;
+
+          let startDate = document.getElementById("startDate").value;
+          let endDate = document.getElementById("endDate").value;
+
+          let bookingStart = document.getElementById("bookingStart").value;
+          let bookingEnd = document.getElementById("bookingEnd").value;
+
+          // ❌ validation
+          if (!doctorId || !startTime || !endTime) {
+              alert("Fill required fields ❌");
+              return;
+          }
+
+          fetch("/add-timing/", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                  doctorId: doctorId,
+                  type: type,
+                  startTime: startTime,
+                  endTime: endTime,
+                  startDate: startDate,
+                  endDate: endDate,
+                  bookingStart: bookingStart,
+                  bookingEnd: bookingEnd
+              })
+          })
+          .then(res => res.json())
+          .then(data => {
+
+              if (data.status === "success") {
+                  alert("Timing added ✅");
+                  closeModal("timingModal");
+
+                  // 🔥 reload timing table
+                  loadTimingsForAppointments();
+
+              } else {
+                  alert(data.error || "Error ❌");
+              }
+
+          })
+          .catch(err => {
+              console.log(err);
+              alert("Server error ❌");
+          });
+      }
+function renderStaff() {
+    return `
+        <h2>Staff</h2>
+
+        <div id="staffStats"></div>
+        <div id="staffList"></div>
+    `;
+}
+
+function loadStaff() {
+
+    fetch("/get-staff/")
+    .then(res => res.json())
+    .then(data => {
+
+        let active = data.staff.filter(s => s.status === "active").length;
+        let absent = data.staff.filter(s => s.status === "absent").length;
+
+        document.getElementById("staffStats").innerHTML =
+            `Active: ${active} | Absent: ${absent}`;
+
+        let html = "";
+
+        data.staff.forEach(s => {
+            html += `
+                <div onclick="viewStaff(${s.id})">
+                    ${s.name} (${s.status})
+                </div>
+            `;
+        });
+
+        document.getElementById("staffList").innerHTML = html;
+    });
+}
+
+function viewStaff(id) {
+
+    fetch("/get-staff/")
+    .then(res => res.json())
+    .then(data => {
+
+        let s = data.staff.find(x => x.id == id);
+
+        document.getElementById("mainContent").innerHTML = `
+            <h2>${s.name}</h2>
+            <p>Email: ${s.email}</p>
+            <p>Phone: ${s.phone}</p>
+            <p>Address: ${s.address}</p>
+
+            <img src="${s.image}" width="150">
+            <img src="${s.aadhaar}" width="150">
+        `;
+    });
+}
+
+function renderDriver() {
+    return `
+        <h2>Drivers</h2>
+
+        <div id="driverStats"></div>
+        <div id="driverList"></div>
+    `;
+}
+
+function loadDrivers() {
+
+    fetch("/get-drivers/")
+    .then(res => res.json())
+    .then(data => {
+
+        let active = data.drivers.filter(d => d.status === "active").length;
+        let absent = data.drivers.filter(d => d.status === "absent").length;
+
+        document.getElementById("driverStats").innerHTML =
+            `Active: ${active} | Absent: ${absent}`;
+
+        let html = "";
+
+        data.drivers.forEach(d => {
+            html += `
+                <div onclick="viewDriver(${d.id})">
+                    ${d.name} (${d.status})
+                </div>
+            `;
+        });
+
+        document.getElementById("driverList").innerHTML = html;
+    });
+}
+
+function viewDriver(id) {
+
+    fetch("/get-drivers/")
+    .then(res => res.json())
+    .then(data => {
+
+        let d = data.drivers.find(x => x.id == id);
+
+        document.getElementById("mainContent").innerHTML = `
+            <h2>${d.name}</h2>
+            <p>Email: ${d.email}</p>
+            <p>Phone: ${d.phone}</p>
+            <p>Address: ${d.address}</p>
+
+            <img src="${d.image}" width="150">
+            <img src="${d.aadhaar}" width="150">
+            <img src="${d.license}" width="150">
+        `;
+    });
+}
+
+      function handleDoctorSelection() {
+          let doctorId = document.getElementById("slotDoctor").value;
+
+          if (!doctorId) return;
+
+          fetch("/get-timings/")
+          .then(res => res.json())
+          .then(data => {
+
+              let timings = data.timings.filter(t => t.doctorId == doctorId);
+      let timing = timings[0]; // or smarter logic later
+
+              if (!timing) {
+                  alert("Doctor timing not set ❌");
+                  return;
+              }
+
+              // 🔥 REGULAR → today
+              if (timing.type === "REGULAR") {
+                  let today = new Date().toISOString().split("T")[0];
+
+                  document.getElementById("slotDate").value = today;
+                  document.getElementById("slotTime").value = timing.startTime;
+              }
+
+              // 🔥 CUSTOM → start date
+              if (timing.type === "CUSTOM") {
+                  document.getElementById("slotDate").value = timing.startDate;
+                  document.getElementById("slotTime").value = timing.startTime;
+              }
+          });
+      }
+            window.onclick = function (event) {
+              if (event.target.classList && event.target.classList.contains("modal"))
+                event.target.classList.remove("active");
+            };
+          function handleLogout() {
+    fetch('/logout/', {
+        method: 'POST',
+        
+        
+    }).then(() => {
+        window.location.href = '/';
+
+    });
+}
+
+            function getTodayStr() {
+              return new Date().toISOString().slice(0, 10);
+            }
+
+            function loadDoctorDropdown() {
+          fetch("/get-doctors/")
+          .then(res => res.json())
+          .then(data => {
+              let sel = document.getElementById("slotDoctor");
+
+              sel.innerHTML = `<option value="">Select Doctor</option>` +
+                  data.doctors.map(d =>
+                      `<option value="${d.id}">${d.name}</option>`
+                  ).join("");
+          });
+      }
+
+            // Dashboard render
+           function renderDashboard() {
+
+    return `
+        <div class="page-header" style="padding: 15px;">
+            <h1>Dashboard Overview</h1>
+            <p>Welcome back, Admin. Here's your healthcare platform summary</p>
+        </div>
+
+        <div id="dashboardStats" class="stats-grid">
+            <p>Loading...</p>
+        </div>
+
+        <div class="section-header">
+            <h2 class="section-title">Recent Patient Feedback</h2>
+        </div>
+
+        <div class="data-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${
+                      feedbacks.length > 0
+                        ? feedbacks.slice(0, 5).map(
+                            (fb) =>
+                              `<tr>
+                                <td>${fb.patient}</td>
+                                <td>${fb.doctorName}</td>
+                                <td>
+                                    <span class="rating-star">
+                                        ${"★".repeat(fb.rating)}${"☆".repeat(5 - fb.rating)}
+                                    </span> ${fb.rating}/5
+                                </td>
+                                <td>${fb.comment}</td>
+                              </tr>`
+                          ).join("")
+                        : `<tr><td colspan="4" style="text-align:center">No feedback yet</td></tr>`
+                    }
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function loadDashboard() {
+    console.log("Dashboard loading...");  // 👈 ADD THIS
+    fetch("/dashboard-data/")
+    .then(res => res.json())
+    .then(data => {
+        console.log("Dashboard data:", data);
+        document.getElementById("dashboardStats").innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-value">${data.citizens}</div>
+                <div class="stat-label">Registered Citizens</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-user-md"></i></div>
+                <div class="stat-value">${data.doctors}</div>
+                <div class="stat-label">Active Doctors</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                <div class="stat-value">${data.appointments}</div>
+                <div class="stat-label">Total Appointments</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-user-clock"></i></div>
+                <div class="stat-value">${data.pending}</div>
+                <div class="stat-label">Pending Requests</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div class="stat-value">₹${data.revenue.toLocaleString()}</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+        `;
+    });
+}
+
+            // Doctors section with improved card spacing
+            function renderDoctors() {
+          return `
+          <div class="section-header">
+            <input
+        type="text"
+        id="doctorSearch"
+        placeholder="Search doctor..."
+        oninput="filterDoctors()"
+        style="padding:10px; margin-bottom:20px; width:300px;"
+      >
+              <h2 class="section-title">Doctor Management</h2>
+              <div>
+                  <button class="btn-primary" onclick="openModal('doctorModal')">
+                      <i class="fas fa-plus"></i> Add Doctor
+                  </button>
+                  <button class="btn-secondary" onclick="openModal('timingModal')">
+                      <i class="fas fa-clock"></i> Set Timings
+                  </button>
+              </div>
+          </div>
+
+          <!-- Doctor Cards -->
+          <div class="grid-cards" id="doctorList">
+              ${doctors.map(doc => `
+                  <div class="doctor-card">
+                   <img
+        src="${doc.image ? doc.image : '/static/assets/default.png'}"
+        class="doctor-img"
+      >
+                      <h3><i class="fas fa-user-md"></i> ${doc.name}</h3>
+                      <p><i class="fas fa-stethoscope"></i> ${doc.specialty} | ${doc.experience} yrs exp</p>
+                      <p><i class="fas fa-phone"></i> ${doc.phone}</p>
+                      <p><i class="fas fa-calendar-alt"></i> Timings: Managed by Admin</p>
+
+                      <div>
+                          <button class="btn-primary" onclick="editDoctor(${doc.id})">
+                              <i class="fas fa-edit"></i> Edit
+                          </button>
+                          <button class="btn-danger" onclick="deleteDoctor(${doc.id})">
+                              <i class="fas fa-trash"></i> Delete
+                          </button>
+                      </div>
+                  </div>
+              `).join("")}
+          </div>
+
+          <!-- 🔥 Timing Table (Dynamic from Backend) -->
+
+          `;
+      }
+
+      function filterDoctors() {
+
+          let query = document.getElementById("doctorSearch").value.toLowerCase();
+
+          if (query === "") {
+              loadDoctors();
+              return;
+          }
+
+          let filtered = doctors.filter(doc =>
+              doc.name.toLowerCase().includes(query) ||
+              doc.specialty.toLowerCase().includes(query)
+          );
+
+          if (filtered.length === 0) {
+              document.getElementById("doctorList").innerHTML =
+                  `<p style="text-align:center;color:#aaa;">No doctors found 😢</p>`;
+              return;
+          }
+
+          let html = filtered.map(doc => `
+              <div class="doctor-card">
+
+                  <img src="${doc.image ? doc.image : '/static/assets/default.png'}" class="doctor-img">
+
+                  <h3><i class="fas fa-user-md"></i> ${doc.name}</h3>
+                  <p><i class="fas fa-stethoscope"></i> ${doc.specialty} | ${doc.experience} yrs exp</p>
+                  <p><i class="fas fa-phone"></i> ${doc.phone}</p>
+
+                  <div>
+                      <button class="btn-primary" onclick="editDoctor(${doc.id})">
+                          <i class="fas fa-edit"></i> Edit
+                      </button>
+                      <button class="btn-danger" onclick="deleteDoctor(${doc.id})">
+                          <i class="fas fa-trash"></i> Delete
+                      </button>
+                  </div>
+
+              </div>
+          `).join("");
+
+          document.getElementById("doctorList").innerHTML = html;
+      }
+           function renderAppointmentsAndTimings() {
+          return `
+          <div class="section-header">
+              <h2 class="section-title">Appointment Management</h2>
+              <button class="btn-primary" onclick="openModal('slotModal')">
+                  <i class="fas fa-plus"></i> Create Slot
+              </button>
+          </div>
+
+          <!-- 🔥 DOCTOR TIMINGS -->
+          <div class="section-header">
+              <h3><i class="fas fa-clock"></i> Doctor Timings</h3>
+          </div>
+
+          <div class="data-table">
+              <table>
+                  <thead>
+                      <tr>
+                          <th>Doctor</th>
+                          <th>Type</th>
+                          <th>Start Time</th>
+                          <th>End Time</th>
+                          <th>Date Range</th>
+      <th>Booking Start</th>
+      <th>Booking End</th>
+      <th>Action</th>
+                      </tr>
+                  </thead>
+
+                  <tbody id="timingBody"></tbody>
+              </table>
+          </div>
+
+          <!-- 🔥 APPOINTMENTS -->
+          <div class="data-table">
+              <table>
+                  <thead>
+                      <tr>
+                          <th>Patient</th>
+                          <th>Doctor</th>
+                          <th>Date</th>
+                          <th>Time</th>
+                          <th>Status</th>
+                      </tr>
+                  </thead>
+
+                  <tbody>
+                    
+                      ${appointments.map(apt => `
+                          <tr>
+                              <td>${apt.patient}</td>
+                              <td>${apt.doctor}</td>
+                              <td>${apt.date}</td>
+                              <td>${apt.time}</td>
+                              <td>${apt.status}</td>
+                          </tr>
+                      `).join("")}
+                  </tbody>
+              </table>
+          </div>
+          `;
+      }
+
+      function loadTimingsForAppointments() {
+          fetch("/get-timings/")
+          .then(res => res.json())
+          .then(data => {
+
+              let html = data.timings.map(t => `
+      <tr>
+          <td>${t.doctor}</td>
+          <td>${t.type}</td>
+          <td>${t.startTime}</td>
+          <td>${t.endTime}</td>
+
+          <td>
+              ${t.type === "CUSTOM"
+                  ? `${t.startDate} → ${t.endDate}`
+                  : "Everyday"}
+          </td>
+
+          <td>${t.bookingStart ? new Date(t.bookingStart).toLocaleString() : "-"}</td>
+          <td>${t.bookingEnd ? new Date(t.bookingEnd).toLocaleString() : "-"}</td>
+
+          <td>
+              <button onclick="deleteTiming(${t.id})">🗑️</button>
+          </td>
+      </tr>
+      `).join("");
+
+              let tbody = document.getElementById("timingBody");
+      if (tbody) {
+          tbody.innerHTML = html;
+      }
+          });
+      }
+
+      function deleteTiming(id) {
+          if (!confirm("Delete this timing?")) return;
+
+          fetch(`/delete-timing/${id}/`)
+          .then(res => res.json())
+          .then(() => {
+              loadTimingsForAppointments();
+          });
+      }
+
+
+            function renderAmbulanceDrivers() {
+              return `<div class="section-header"><h2 class="section-title">Ambulance Driver Management</h2></div>
+              <div class="data-table"><table><thead><tr><th>Driver Name</th><th>License/ID</th><th>Verification Status</th><th>Emergency Status</th><th>Actions</th></tr></thead><tbody>
+              ${ambulanceDrivers
+                .map(
+                  (dr, idx) => `<tr>
+                   <td><i class="fas fa-truck"></i> <strong>${dr.name}</strong></td>
+                   <td>${dr.license || "Not Submitted"}<br><small>${dr.idProof || ""}</small></td>
+                   <td>${dr.verified ? '<span class="badge badge-success">✓ Verified</span>' : '<span class="badge badge-pending">Pending</span>'}</td>
+                   <td><span class="badge ${dr.requestStatus === "pending" ? "badge-pending" : dr.requestStatus === "onway" ? "badge-onway" : "badge-success"}">${dr.requestStatus.toUpperCase()}</span></td>
+                   <td>${!dr.verified ? `<button class="btn-primary" onclick="openVerifyDriver(${idx},'${dr.name}')">Verify License</button>` : `<button class="btn-warning" onclick="updateDriverStatus(${idx},'onway')">Set On Way</button> <button class="btn-success" onclick="updateDriverStatus(${idx},'success')">Mark Success</button>`}</td>
+               </tr>`,
+                )
+                .join("")}
+              </tbody></table></div>`;
+            }
+
+            function renderBillingForm() {
+
+    const doctorsOptions = doctors
+    .map(d => `<option value="${d.id}">${d.name} (${d.specialty})</option>`)
+        .join("");
+
+    const citizensOptions =
+        `<option value="">-- Select Existing Patient --</option>` +
+        citizens.map(c =>
+            `<option value="${c.id}" data-name="${c.name}">
+                ${c.name} (${c.username})
+            </option>`
+        ).join("");
+
+    return `
+    <div class="page-header" style="padding: 15px;">
+        <h1>OPD Billing & Patient Registration</h1>
+        <p>Complete patient visit record & billing</p>
+    </div>
+
+    <div class="billing-form-container">
+        <form id="opdBillingForm">
+
+            <!-- 🟢 Patient Info -->
+            <div class="form-section">
+                <h3><i class="fas fa-user-circle"></i> Patient Information</h3>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>Patient Type</label>
+                        <select id="patientType">
+                            <option value="New">New Patient</option>
+                            <option value="Existing">Existing Patient</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="existingPatientGroup" style="display:none;">
+                        <label>Select Existing Citizen</label>
+                        <select id="existingPatientId">${citizensOptions}</select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Doctor Name *</label>
+                        <select id="doctorName" onchange="handleDoctorChange()" required>
+                            <option value="">Select Doctor</option>
+                            ${doctorsOptions}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="opdDate" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Serial Number</label>
+                        <input type="text" id="serialNumber" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="patientName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Guardian Name</label>
+                        <input type="text" id="guardianName">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" id="address">
+                    </div>
+
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" id="city">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mobile</label>
+                        <input type="tel" id="mobile">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Date of Birth</label>
+                        <input type="date" id="dob">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" id="age">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select id="gender">
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Blood Group</label>
+                        <input type="text" id="bloodGroup">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Marital Status</label>
+                        <select id="maritalStatus">
+                            <option>Single</option>
+                            <option>Married</option>
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 🟢 Clinical -->
+            <div class="form-section">
+                <h3><i class="fas fa-stethoscope"></i> Clinical Details</h3>
+
+                <div class="form-grid">
+
+                  <div class="form-group">
+    <label>FBS (Fasting Blood Sugar)</label>
+    <input type="text" id="fbs" placeholder="Enter FBS">
+</div>
+
+<div class="form-group">
+    <label>PBS (Postprandial Blood Sugar)</label>
+    <input type="text" id="pbs" placeholder="Enter PBS">
+</div>
+
+                    <div class="form-group">
+                        <label>Department</label>
+                        <input type="text" id="department">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Referred By</label>
+                        <input type="text" id="referredBy">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Blood Pressure</label>
+                        <input type="text" id="bloodPressure">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pulse</label>
+                        <input type="text" id="pulse">
+                    </div>
+                    <div class="form-group">
+    <label>Temperature</label>
+    <input type="text" id="temperature">
+</div>
+
+<div class="form-group">
+    <label>Weight</label>
+    <input type="text" id="weight">
+</div>
+
+<div class="form-group">
+    <label>Oxygen</label>
+    <input type="text" id="oxygen">
+</div>
+
+<div class="form-group">
+    <label>Remarks</label>
+    <input type="text" id="remarks">
+</div>
+                </div>
+            </div>
+
+            <!-- 🟢 Billing -->
+            <div class="form-section">
+                <h3><i class="fas fa-rupee-sign"></i> Billing</h3>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>Amount</label>
+                        <input type="number" id="amount">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Discount</label>
+                        <input type="number" id="discountAmount" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Net Amount</label>
+                        <input type="text" id="netAmount" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Payment Mode</label>
+                        <select id="paymentMode">
+                            <option>Cash</option>
+                            <option>UPI</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Next Visit Date</label>
+                        <input type="date" id="nextVisitDate">
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 🟢 Buttons -->
+            <div class="form-actions">
+                <button type="button" onclick="resetBillingForm()">Reset</button>
+                <button type="button" onclick="saveNewBill()">Save Bill</button>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- 🔥 VISIT LIST ON TOP -->
+    <div class="section-header">
+        <h2>Today's Visitors</h2>
+    </div>
+
+    <div id="todayVisitorsContainer"></div>
+    `;
+}
+
+
+
+
+
+function renderBilling() {
+
+    return `
+    <div style="display:flex; gap:10px; margin-bottom:20px;">
+        <button onclick="showBillingTab()">Billing</button>
+        <button onclick="showViewTab()">View</button>
+    </div>
+
+    <div id="billingContent"></div>
+    `;
+    setTimeout(() => {
+    loadTodayVisitors();
+}, 100);
+}
+
+
+function showBillingTab() {
+
+    document.getElementById("billingContent").innerHTML = renderBillingForm();
+
+    loadDoctorsForBilling();
+    loadTodayVisitors();
+    initBillingFormEvents();
+}
+
+function showViewTab() {
+
+    document.getElementById("billingContent").innerHTML = `
+        <div style="margin-bottom:20px;">
+            <input type="text" id="searchName" placeholder="Search Patient">
+            <input type="date" id="searchDate">
+            <button onclick="loadFilteredBills()">Search</button>
+        </div>
+
+        <div id="viewTable"></div>
+    `;
+
+    document.getElementById("searchDate").value = getTodayStr();
+
+    loadFilteredBills();
+}
+
+function loadFilteredBills() {
+
+    const name = document.getElementById("searchName").value.trim();
+    const date = document.getElementById("searchDate").value;
+
+    if (!date) {
+        alert("Select date");
+        return;
+    }
+
+    document.getElementById("viewTable").innerHTML = "Loading...";
+
+    fetch(`/get-opd-bills/?name=${name}&date=${date}`)
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.bills.length === 0) {
+            document.getElementById("viewTable").innerHTML =
+                "<p style='text-align:center;'>No records found ❌</p>";
+            return;
+        }
+
+        let html = `
+        <table>
+            <tr>
+                <th>Serial</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Amount</th>
+                <th>Action</th>
+            </tr>
+        `;
+
+        data.bills.forEach(b => {
+            html += `
+                <tr>
+                    <td>${b.serial}</td>
+                    <td>${b.patient}</td>
+                    <td>${b.doctor}</td>
+                    <td>₹${b.amount}</td>
+                    <td>
+                        <button onclick="deleteBill(${b.id})">Delete</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `</table>`;
+
+        document.getElementById("viewTable").innerHTML = html;
+    });
+}
+      
+            function calculateAgeFromDOB() {
+              /* unchanged */ const dob = document.getElementById("dob").value;
+              if (dob) {
+                const birthDate = new Date(dob);
+                const todayDate = new Date();
+                let age = todayDate.getFullYear() - birthDate.getFullYear();
+                const m = todayDate.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && todayDate.getDate() < birthDate.getDate()))
+                  age--;
+                document.getElementById("age").value = age > 0 ? age : "";
+              } else document.getElementById("age").value = "";
+            }
+
+document.getElementById("timingType")
+.addEventListener("change", function () {
+
+    let customFields = document.getElementById("customFields");
+
+    if (this.value === "CUSTOM") {
+        customFields.style.display = "block";
+    } else {
+        customFields.style.display = "none";
+    }
+});
+           function initBillingFormEvents() {
+
+    const patientTypeSelect = document.getElementById("patientType");
+    const existingGroup = document.getElementById("existingPatientGroup");
+    const existingSelect = document.getElementById("existingPatientId");
+    const patientNameField = document.getElementById("patientName");
+
+    // 🔥 Patient Type Change
+    if (patientTypeSelect) {
+        patientTypeSelect.addEventListener("change", () => {
+
+            const isExisting = patientTypeSelect.value === "Existing";
+
+            // show/hide dropdown
+            if (existingGroup) {
+                existingGroup.style.display = isExisting ? "block" : "none";
+            }
+
+            // ✅ NEW PATIENT → clear fields
+            if (!isExisting) {
+                if (patientNameField) patientNameField.value = "";
+            }
+
+            // ✅ EXISTING PATIENT → autofill
+            else {
+                if (existingSelect && existingSelect.value) {
+
+                    const opt = existingSelect.options[existingSelect.selectedIndex];
+                    const name = opt.getAttribute("data-name") || "";
+
+                    if (patientNameField) {
+                        patientNameField.value = name;
+                    }
+                }
+            }
+        });
+
+        patientTypeSelect.dispatchEvent(new Event("change"));
+    }
+
+    // 🔥 Existing dropdown change
+    if (existingSelect) {
+        existingSelect.addEventListener("change", () => {
+
+            if (patientTypeSelect.value === "Existing") {
+
+                const opt = existingSelect.options[existingSelect.selectedIndex];
+                const name = opt.getAttribute("data-name") || "";
+
+                if (patientNameField) {
+                    patientNameField.value = name;
+                }
+            }
+        });
+    }
+
+    // 🔥 DOB → Age
+    const dobField = document.getElementById("dob");
+    if (dobField) {
+        dobField.addEventListener("change", calculateAgeFromDOB);
+    }
+
+    // 🔥 Amount calculation
+    const amountField = document.getElementById("amount");
+    const discountField = document.getElementById("discountAmount");
+    const netField = document.getElementById("netAmount");
+
+    function updateNet() {
+        let amt = parseFloat(amountField?.value) || 0;
+        let disc = parseFloat(discountField?.value) || 0;
+        let net = amt - disc;
+
+        if (netField) {
+            netField.value = net >= 0 ? net : 0;
+        }
+    }
+
+    if (amountField) amountField.addEventListener("input", updateNet);
+    if (discountField) discountField.addEventListener("input", updateNet);
+
+    updateNet();
+}
+function renderRequests() {
+    return `
+        <h2>Pending Requests</h2>
+        <div id="requestList"></div>
+    `;
+}
+
+function loadRequests() {
+
+    fetch("/get-pending-requests/")
+    .then(res => res.json())
+    .then(data => {
+
+        let html = "<h3>Staff</h3>";
+
+        data.staff.forEach(s => {
+            html += `
+                <div>
+                    ${s.name}
+                    <button onclick="approveStaff(${s.id})">Approve</button>
+                    <button onclick="rejectStaff(${s.id})">Reject</button>
+                </div>
+            `;
+        });
+
+        html += "<h3>Drivers</h3>";
+
+        data.drivers.forEach(d => {
+            html += `
+                <div>
+                    ${d.name}
+                    <button onclick="approveDriver(${d.id})">Approve</button>
+                    <button onclick="rejectDriver(${d.id})">Reject</button>
+                </div>
+            `;
+        });
+
+        document.getElementById("requestList").innerHTML = html;
+    });
+}
+
+function approveStaff(id) {
+    fetch(`/approve-staff/${id}/`, { method: "POST" })
+    .then(res => res.json())
+    .then(() => loadRequests());
+}
+
+function rejectStaff(id) {
+    fetch(`/reject-staff/${id}/`, { method: "POST" })
+    .then(res => res.json())
+    .then(() => loadRequests());
+}
+
+function approveDriver(id) {
+    fetch(`/approve-driver/${id}/`, { method: "POST" })
+    .then(res => res.json())
+    .then(() => loadRequests());
+}
+
+function rejectDriver(id) {
+    fetch(`/reject-driver/${id}/`, { method: "POST" })
+    .then(res => res.json())
+    .then(() => loadRequests());
+}
+function renderSection(section) {
+
+    let content = "";
+
+    if (section === "dashboard") {
+        content = renderDashboard();
+    }
+    else if (section === "citizens") {
+        loadCitizens();
+        return;
+    }
+    else if (section === "doctors") {
+        content = renderDoctors();
+    }
+    else if (section === "appointments") {
+        content = renderAppointmentsAndTimings();
+    }
+    else if (section === "ambulance") {
+        content = renderAmbulanceDrivers();
+    }
+    else if (section === "staff") {
+        content = renderStaff();
+    }
+    else if (section === "driver") {
+        content = renderDriver();
+    }
+    else if (section === "requests") {
+        content = renderRequests();
+    }
+    else if (section === "billing") {
+        content = renderBilling();
+    }
+
+    // 🔥 FIRST render HTML
+    document.getElementById("mainContent").innerHTML = content;
+
+    // 🔥 THEN call functions (IMPORTANT FIX)
+
+    if (section === "dashboard") {
+        loadDashboard();
+    }
+    else if (section === "appointments") {
+        setTimeout(loadTimingsForAppointments, 100);
+    }
+    else if (section === "staff") {
+        setTimeout(loadStaff, 100);
+    }
+    else if (section === "driver") {
+        setTimeout(loadDrivers, 100);
+    }
+    else if (section === "requests") {
+        setTimeout(loadRequests, 100);
+    }
+    else if (section === "billing") {
+        setTimeout(() => {
+            loadDoctorsForBilling();
+            loadTodayVisitors();
+            showBillingTab();
+            initBillingFormEvents();
+        }, 100);
+    }
+}
+
+function loadDoctors() {
+    fetch("/get-doctors/")
+    .then(res => res.json())
+    .then(data => {
+        doctors = data.doctors;   // 🔥 IMPORTANT
+    
+    });
+}
+function loadDoctorsForBilling() {
+    fetch("/get-doctors/")
+    .then(res => res.json())
+    .then(data => {
+
+        doctors = data.doctors;
+
+        // 🔥 update dropdown directly
+        let sel = document.getElementById("doctorName");
+
+        if (sel) {
+            sel.innerHTML =
+                `<option value="">Select Doctor</option>` +
+                doctors.map(d =>
+                    `<option value="${d.id}">${d.name} (${d.specialty})</option>`
+                ).join("");
+        }
+    });
+}
+
+function getCSRFToken() {
+    return document.cookie.split("; ")
+        .find(row => row.startsWith("csrftoken"))
+        ?.split("=")[1];
+}
+            function resetBillingForm() {
+
+              let dateField = document.getElementById("opdDate");
+if (dateField) dateField.value = getTodayStr();
+
+          const form = document.getElementById("opdBillingForm");
+          if (form) form.reset();
+
+          // clear calculated fields
+          document.getElementById("age").value = "";
+          document.getElementById("serialNumber").value = "";
+
+          // reset date
+          document.getElementById("opdDate").value = getTodayStr();
+
+          initBillingFormEvents();
+      }
+           window.saveNewBill = function () {
+
+            
+    
+    const patientType = document.getElementById("patientType").value;
+
+    const patientName = document.getElementById("patientName").value.trim();
+    if (!patientName) return alert("Patient Name is required");
+
+   const doctorSelect = document.getElementById("doctorName");
+
+if (!doctorSelect || doctorSelect.selectedIndex === -1) {
+    return alert("Please select a doctor properly");
+}
+
+const doctorId = doctorSelect.value;
+const doctorText = doctorSelect.options[doctorSelect.selectedIndex]?.text || "";
+    if (!doctorId) return alert("Select Doctor");
+
+    
+
+    const amount = parseFloat(document.getElementById("amount").value);
+    if (isNaN(amount) || amount <= 0) return alert("Valid amount required");
+
+    const discount = parseFloat(document.getElementById("discountAmount").value) || 0;
+    const netAmount = amount - discount;
+
+    const today = document.getElementById("opdDate").value;
+    const fbs = document.getElementById("fbs").value;
+    const pbs = document.getElementById("pbs").value;
+    const bp = document.getElementById("bloodPressure").value;
+    const pulse = document.getElementById("pulse").value;
+    const weight = document.getElementById("weight").value;
+
+    // ✅ CREATE BILL OBJECT
+    let doctor = doctors.find(d => d.id == doctorId);
+    const newBill = {
+        id: Date.now(),
+
+        
+        date: today,
+
+        patientType,
+        patientName,
+      
+        guardianName: document.getElementById("guardianName").value,
+        address: document.getElementById("address").value,
+        city: document.getElementById("city").value,
+        mobile: document.getElementById("mobile").value,
+        dob: document.getElementById("dob").value,
+        gender: document.getElementById("gender").value,
+        age: document.getElementById("age").value,
+
+        bloodPressure: document.getElementById("bloodPressure").value,
+        pulse: document.getElementById("pulse").value,
+        fbs: document.getElementById("fbs").value,
+        pbs: document.getElementById("pbs").value,
+
+        department: document.getElementById("department").value,
+        bloodGroup: document.getElementById("bloodGroup").value,
+        maritalStatus: document.getElementById("maritalStatus").value,
+        referredBy: document.getElementById("referredBy").value,
+
+        doctorId: doctorId,
+        
+
+          doctorName: doctor ? doctor.name : "Unknown",
+
+        amount,
+        discountAmount: discount,
+        netAmount,
+
+        paymentMode: document.getElementById("paymentMode").value,
+        remarks: document.getElementById("remarks").value,
+        temperature: document.getElementById("temperature").value,
+        
+        oxygen: document.getElementById("oxygen").value,
+
+        nextVisitDate: document.getElementById("nextVisitDate").value,
+
+        timestamp: Date.now()
+    };
+
+   
+    
+
+    // ✅ SAVE TO DATABASE
+    let url = "/save-opd-bill/";
+
+if (editingBillId) {
+    url = `/update-opd-bill/${editingBillId}/`;
+}
+
+fetch(url, {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCSRFToken()
+    },
+    body: JSON.stringify({
+        patient_name: patientName,
+        doctor_id: doctorId,
+        date: document.getElementById("opdDate").value,
+        fbs: fbs,
+        pbs: pbs,
+        bp: bp,
+        pulse: pulse,
+        weight: weight,
+        amount: amount,
+        discount: discount,
+        net_amount: netAmount,
+        payment_mode: document.getElementById("paymentMode").value
+    })
+})
+.then(res => res.json())
+.then(data => {
+
+    if (data.status === "success") {
+      console.log("SERVER RESPONSE:", data);
+        alert(editingBillId ? "Updated ✅" : "Saved ✅");
+      console.log("editingBillId:", editingBillId);
+        editingBillId = null;
+
+        loadTodayVisitors();  // ✅ refresh table only
+    }
+});
+
+};
+
+function deleteBill(id) {
+
+    if (!confirm("Delete this bill?")) return;
+
+    fetch(`/delete-opd-bill/${id}/`, {
+        method: "POST"   // your backend uses GET
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("Deleted ✅");
+            loadTodayVisitors();  // refresh
+        }
+    });
+}
+
+let editingBillId = null;
+
+function editBill(id) {
+
+    fetch("/get-opd-bills/")
+    .then(res => res.json())
+    .then(data => {
+
+        let bill = data.bills.find(b => b.id == id);
+      console.log("EDIT CLICKED ID:", id);
+        editingBillId = id;
+
+        document.getElementById("patientName").value = bill.patient;
+        document.getElementById("doctorName").value = bill.doctorId;
+        document.getElementById("opdDate").value = bill.date || getTodayStr();
+        document.getElementById("amount").value = bill.amount;
+
+        // 🔥 serial stays same
+        document.getElementById("serialNumber").value = bill.serial;
+        setTimeout(() => {
+    document.getElementById("doctorName").value = bill.doctorId;
+}, 300);
+    });
+    
+}
+    
+           function deleteBillRecord(id) {
+
+    if (!confirm("Delete this visit record?")) return;
+
+    fetch(`/delete-opd-bill/${id}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCSRFToken()
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("Deleted ✅");
+            loadTodayVisitors();  // refresh list
+        }
+    });
+}
+            function saveDoctor() {
+
+          let formData = new FormData();
+
+          formData.append("id", document.getElementById("docId").value);
+          formData.append("name", document.getElementById("docName").value);
+          formData.append("specialty", document.getElementById("docSpecialty").value);
+          formData.append("experience", document.getElementById("docExp").value);
+          formData.append("phone", document.getElementById("docPhone").value);
+
+          let file = document.getElementById("docImage").files[0];
+
+          if (file) {
+              formData.append("image", file);
+          }
+
+          fetch("/add-doctor/", {
+              method: "POST",
+              body: formData
+          })
+          .then(res => res.json())
+          .then(data => {
+              if (data.status === "success") {
+                  alert("Doctor saved ✅");
+                  closeModal("doctorModal");
+                  loadDoctors();
+              }
+          });
+      }
+
+      function loadTimings() {
+          fetch("/get-timings/")
+          .then(res => res.json())
+          .then(data => {
+
+              let html = `
+              <div class="section-header">
+                  <h3><i class="fas fa-calendar-week"></i> Doctor Timings</h3>
+              </div>
+
+              <div class="data-table">
+              <table>
+              <thead>
+              <tr>
+                  <th>Doctor</th>
+                  <th>Type</th>
+                  <th>Start Time</th>
+                  <th>End Time</th>
+                  <th>Date Range</th>
+              </tr>
+              </thead>
+
+              <tbody>
+              ${data.timings.map(t => `
+                  <tr>
+                      <td>${t.doctor}</td>
+                      <td>${t.type}</td>
+                      <td>${t.startTime}</td>
+                      <td>${t.endTime}</td>
+                      <td>
+                          ${t.type === "CUSTOM"
+                              ? `${t.startDate} → ${t.endDate}`
+                              : "Everyday"}
+                      </td>
+                  </tr>
+              `).join("")}
+              </tbody>
+
+              </table>
+              </div>
+              `;
+
+              document.getElementById("timingTable").innerHTML = html;
+          });
+      }
+
+     
+
+      function deleteDoctor(id) {
+          fetch(`/delete-doctor/${id}/`, {
+              method: "POST"
+          })
+          .then(res => res.json())
+          .then(data => {
+              if (data.status === "success") {
+                  loadDoctors();
+              }
+          });
+      }
+            window.editDoctor = (id) => {
+              let doc = doctors.find((d) => d.id == id);
+              document.getElementById("docId").value = doc.id;
+              document.getElementById("docName").value = doc.name;
+              document.getElementById("docSpecialty").value = doc.specialty;
+              document.getElementById("docExp").value = doc.experience;
+              document.getElementById("docPhone").value = doc.phone;
+              openModal("doctorModal");
+            };
+
+            window.deleteAppointment = (id) => {
+              appointments = appointments.filter((a) => a.id !== id);
+
+              renderCurrentView();
+            };
+           window.createAppointmentSlot = () => {
+          let patient = document.getElementById("slotPatient").value;
+          let doctorId = document.getElementById("slotDoctor").value;
+          let date = document.getElementById("slotDate").value;
+          let time = document.getElementById("slotTime").value;
+
+          if (!patient || !doctorId || !date || !time) {
+              return alert("All fields required ❌");
+          }
+
+          // 🔥 STEP 1: CHECK TIMING FIRST
+          fetch("/get-timings/")
+          .then(res => res.json())
+          .then(data => {
+
+              let timing = data.timings.find(t => t.doctorId == doctorId);
+
+              if (!timing) {
+                  return alert("Doctor timing not set ❌");
+              }
+
+              let now = new Date();
+
+      if (timing.type === "CUSTOM") {
+
+          let bookingStart = new Date(timing.bookingStart.replace(" ", "T"));
+          let bookingEnd = new Date(timing.bookingEnd.replace(" ", "T"));
+
+          console.log("NOW:", now);
+          console.log("START:", bookingStart);
+          console.log("END:", bookingEnd);
+
+          if (now < bookingStart) {
+              return alert("Booking not started ❌");
+          }
+
+          if (now > bookingEnd) {
+              return alert("Booking closed ❌");
+          }
+      }
+              // 🔥 STEP 2: SEND TO BACKEND
+              fetch("/add-appointment/", {
+                  method: "POST",
+                  headers: {"Content-Type": "application/json"},
+                  body: JSON.stringify({
+                      patient,
+                      doctorId,
+                      date,
+                      time
+                  })
+              })
+              .then(res => res.json())
+              .then(data => {
+
+                  if (data.error) {
+                      alert(data.error);
+                  } else {
+                      alert("Appointment booked ✅");
+                      closeModal("slotModal");
+
+                      // 🔥 refresh data
+                      loadAppointments();
+
+                      setTimeout(() => {
+                          document.getElementById("mainContent").innerHTML = renderAppointmentsAndTimings();
+                          loadTimingsForAppointments();
+                      }, 300);
+                  }
+              });
+
+          });
+      };
+
+      function sendAppointment() {
+          fetch("/add-appointment/", {
+              method: "POST",
+              headers: {"Content-Type": "application/json"},
+              body: JSON.stringify({
+                  patient,
+                  doctorId,
+                  date,
+                  time
+              })
+          })
+          .then(res => res.json())
+          .then(data => {
+
+              if (data.error) {
+                  alert(data.error);
+              } else {
+                  alert("Appointment booked ✅");
+                  closeModal("slotModal");
+
+                  loadAppointments();
+
+                  setTimeout(() => {
+                      document.getElementById("mainContent").innerHTML = renderAppointmentsAndTimings();
+                  }, 300);
+              }
+          });
+      }
+
+      function loadAppointments() {
+          fetch("/get-appointments/")
+          .then(res => res.json())
+          .then(data => {
+
+              appointments = data.appointments;
+
+          });
+      }
+            window.openVerifyDriver = (idx, name) => {
+              document.getElementById("driverIdx").value = idx;
+              document.getElementById("driverNameDisplay").innerHTML =
+                `<i class="fas fa-id-card"></i> ${name}`;
+              openModal("driverModal");
+            };
+            window.verifyDriver = () => {
+              let idx = parseInt(document.getElementById("driverIdx").value),
+                license = document.getElementById("licenseNumber").value,
+                idProof = document.getElementById("idProof").value;
+              if (!license || !idProof) return alert("Enter License & ID proof");
+              ambulanceDrivers[idx].license = license;
+              ambulanceDrivers[idx].idProof = idProof;
+              ambulanceDrivers[idx].verified = true;
+              ambulanceDrivers[idx].requestStatus = "pending";
+
+              closeModal("driverModal");
+              renderCurrentView();
+            };
+            window.updateDriverStatus = (idx, status) => {
+              ambulanceDrivers[idx].requestStatus = status;
+
+              renderCurrentView();
+            };
+
+        function renderCurrentView() {
+
+    let active =
+        document.querySelector(".nav-item.active")?.dataset.section ||
+        "dashboard";
+
+    let html = "";
+
+    // 🟢 Dashboard
+    if (active === "dashboard") {
+        html = renderDashboard();
+    }
+
+    // 🟢 Citizens
+    else if (active === "citizens") {
+        loadCitizens();
+        return;
+    }
+
+    // 🟢 Doctors
+    else if (active === "doctors") {
+        loadDoctors();
+        setTimeout(() => loadTimings(), 300);
+        return;
+    }
+
+    // 🟢 Appointments
+    else if (active === "appointments") {
+        loadAppointments();
+
+        setTimeout(() => {
+            document.getElementById("mainContent").innerHTML =
+                renderAppointmentsAndTimings();
+
+            loadTimingsForAppointments();
+        }, 300);
+
+        return;
+    }
+
+    // 🟢 Ambulance
+    else if (active === "ambulance") {
+        html = renderAmbulanceDrivers();
+    }
+
+    // 🟢 Billing
+    else if (active === "billing") {
+
+        document.getElementById("mainContent").innerHTML = renderBilling();
+
+        setTimeout(() => {
+            initBillingFormEvents();
+            loadTodayVisitors();
+            loadDoctorsForBilling(); 
+
+            let dateField = document.getElementById("opdDate");
+            if (dateField) dateField.value = getTodayStr();
+        }, 100);
+
+        return;
+    }
+
+    // 🔥 DEFAULT RENDER
+    document.getElementById("mainContent").innerHTML = html;
+}
+
+// 🔥 NAVIGATION CLICK HANDLER
+document.querySelectorAll(".nav-item").forEach((item) => {
+    item.addEventListener("click", () => {
+
+        document.querySelectorAll(".nav-item")
+            .forEach(n => n.classList.remove("active"));
+
+        item.classList.add("active");
+
+        renderCurrentView();
+    });
+});
+document.querySelectorAll(".nav-item").forEach(item => {
+    item.addEventListener("click", function () {
+
+        // remove active
+        document.querySelectorAll(".nav-item")
+            .forEach(i => i.classList.remove("active"));
+
+        this.classList.add("active");
+
+        const section = this.getAttribute("data-section");
+
+        renderSection(section);
+    });
+});
+// 🔥 INITIAL LOAD
+renderCurrentView();
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    // 🔥 ACTIVATE DASHBOARD BY DEFAULT
+    renderSection("dashboard");
+
+    // 🔥 ALSO ADD NAV CLICK HANDLER (VERY IMPORTANT)
+    document.querySelectorAll(".nav-item").forEach(item => {
+        item.addEventListener("click", function () {
+
+            // remove active class
+            document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+
+            // add active to clicked
+            this.classList.add("active");
+
+            // render section
+            const section = this.getAttribute("data-section");
+            renderSection(section);
+        });
+    });
+    ocument.getElementById("logoutButton")
+    .addEventListener("click", handleLogout);
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("logoutButton")
+        .addEventListener("click", handleLogout);
+});
+    </script>
+  </body>
+</html>

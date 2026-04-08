@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Mental Health Chatbot</title>
+</head>
+<body>
+
+<h2>💬 Mental Health Chatbot</h2>
+
+<div id="chatBox" style="height:400px; overflow:auto; border:1px solid #ccc; padding:10px;"></div>
+
+<input type="text" id="userInput" placeholder="Type your message...">
+<button onclick="sendMessage()">Send</button>
+
+<script>
+function sendMessage() {
+    const input = document.getElementById("userInput");
+    const message = input.value.trim();
+
+    if (!message) return;  // 🚨 prevents empty messages
+
+    appendMessage("user", message);
+
+    fetch('/chat/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({message: message})
+    })
+    .then(res => res.json())
+    .then(data => {
+        appendMessage("bot", data.reply);
+    });
+
+    input.value = "";
+}
+function appendMessage(sender, text) {
+    const chatBox = document.getElementById("chatBox");
+    chatBox.innerHTML += `<p><b>${sender}:</b> ${text}</p>`;
+}
+</script>
+
+</body>
+</html>

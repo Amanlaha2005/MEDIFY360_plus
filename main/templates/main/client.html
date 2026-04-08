@@ -1,0 +1,903 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Medify | Patient Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --navy: #0B1F3A;
+            --navy-mid: #122B52;
+            --teal: #00B4A6;
+            --teal-glow: #00D4C4;
+            --white: #FFFFFF;
+            --danger: #E84B6A;
+            --border: rgba(255, 255, 255, 0.12);
+            --success: #10B981;
+            --warning: #F59E0B;
+            --card-bg: rgba(255, 255, 255, 0.04);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--navy);
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* FULL WIDTH LAYOUT - no max-width constraints */
+        .dashboard-container {
+            width: 100%;
+            padding: 32px 40px;
+            min-height: 100vh;
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            margin-bottom: 40px;
+        }
+
+        .welcome-section h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2.4rem;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #fff, var(--teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-section p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+        }
+
+        /* Stats Grid - Full width flex, responsive */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 28px;
+            margin-bottom: 48px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 28px 24px;
+            transition: all 0.25s;
+            text-align: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 180, 166, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(0, 180, 166, 0.15);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px auto;
+        }
+
+        .stat-icon ion-icon {
+            font-size: 32px;
+            color: var(--teal);
+        }
+
+        .stat-value {
+            font-size: 2.4rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Health Profile Card - Full width with inner max-width for readability */
+        .health-profile {
+            background: linear-gradient(135deg, rgba(0, 180, 166, 0.12), rgba(11, 31, 58, 0.7));
+            border: 1px solid rgba(0, 180, 166, 0.35);
+            border-radius: 32px;
+            padding: 32px 40px;
+            margin-bottom: 52px;
+            width: 100%;
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .profile-header h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.7rem;
+        }
+
+        .edit-profile-btn {
+            padding: 8px 28px;
+            background: rgba(0, 180, 166, 0.2);
+            border: 1.5px solid var(--teal);
+            border-radius: 60px;
+            color: var(--teal);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .edit-profile-btn:hover {
+            background: var(--teal);
+            color: var(--navy);
+            transform: scale(1.02);
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 28px;
+            text-align: center;
+        }
+
+        .profile-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .profile-item label {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.55);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 500;
+        }
+
+        .profile-item .value {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .bmi-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .bmi-normal { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+        .bmi-overweight { background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+        .bmi-obese { background: rgba(232, 75, 106, 0.2); color: #E84B6A; }
+        .bmi-underweight { background: rgba(99, 126, 154, 0.2); color: #9ca3af; }
+
+        /* Section Tabs - Full width */
+        .section-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 48px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 40px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 60px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: rgba(0, 180, 166, 0.2);
+            color: var(--teal);
+        }
+
+        .tab-btn:hover {
+            color: var(--white);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            width: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.35s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* FULL WIDTH CARDS GRID - takes entire width */
+        .full-width-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 28px;
+            width: 100%;
+        }
+
+        /* Empty State - Centered but full width container */
+        .empty-state-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 420px;
+            width: 100%;
+        }
+
+        .empty-state-center {
+            text-align: center;
+            padding: 60px 48px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 48px;
+            border: 1px dashed rgba(0, 180, 166, 0.4);
+            max-width: 580px;
+            width: 100%;
+            backdrop-filter: blur(4px);
+        }
+
+        .empty-icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .empty-state-center h3 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-family: 'DM Serif Display', serif;
+        }
+
+        .empty-state-center p {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 32px;
+            font-size: 1rem;
+        }
+
+        .center-action-btn {
+            padding: 14px 36px;
+            background: var(--teal);
+            border: none;
+            border-radius: 60px;
+            color: var(--navy);
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .center-action-btn:hover {
+            background: var(--teal-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 180, 166, 0.3);
+        }
+
+        /* Cards styling */
+        .appointment-card, .feedback-card, .doctor-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 28px;
+            transition: all 0.25s;
+            height: 100%;
+        }
+
+        .appointment-card:hover, .feedback-card:hover, .doctor-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 180, 166, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+        .status-confirmed { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+
+        .cancel-appointment-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(232, 75, 106, 0.12);
+            border: 1px solid rgba(232, 75, 106, 0.4);
+            border-radius: 40px;
+            color: var(--danger);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .cancel-appointment-btn:hover {
+            background: rgba(232, 75, 106, 0.25);
+        }
+
+        .doctor-header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .doctor-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, var(--teal), #009688);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .doctor-info h3 {
+            font-size: 1.25rem;
+            margin-bottom: 6px;
+        }
+
+        .doctor-specialty {
+            display: inline-block;
+            padding: 5px 16px;
+            background: rgba(0, 180, 166, 0.12);
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin: 12px 0;
+        }
+
+        .book-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--teal);
+            border: none;
+            border-radius: 60px;
+            color: var(--navy);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+
+        .book-btn:hover {
+            background: var(--teal-glow);
+            transform: translateY(-2px);
+        }
+
+        .rating-stars {
+            color: #F59E0B;
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+        }
+
+        .feedback-comment {
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.5;
+            margin: 14px 0;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(7, 18, 36, 0.96);
+            backdrop-filter: blur(14px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+            padding: 20px;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            max-width: 540px;
+            width: 100%;
+            background: linear-gradient(145deg, #0F2545, #0B1A30);
+            border: 1px solid rgba(0, 180, 166, 0.4);
+            border-radius: 40px;
+            padding: 40px;
+            transform: scale(0.96);
+            transition: transform 0.25s;
+            position: relative;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 26px;
+            font-size: 30px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.5);
+            transition: color 0.2s;
+        }
+
+        .close:hover {
+            color: var(--teal);
+        }
+
+        .modal-content input, .modal-content select, .modal-content textarea {
+            width: 100%;
+            padding: 14px 18px;
+            margin: 8px 0 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .rating {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .star {
+            font-size: 34px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.25);
+            transition: 0.2s;
+        }
+
+        .star.active {
+            color: #F59E0B;
+        }
+
+        .btn-submit, .btn-cancel {
+            flex: 1;
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-submit {
+            background: var(--teal);
+            color: var(--navy);
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        /* Responsive full width adjustments */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                padding: 28px 24px;
+            }
+            .profile-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 20px 16px;
+            }
+            .welcome-section h1 {
+                font-size: 1.8rem;
+            }
+            .stats-grid {
+                gap: 16px;
+            }
+            .profile-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .health-profile {
+                padding: 24px;
+            }
+            .full-width-grid {
+                grid-template-columns: 1fr;
+            }
+            .tab-btn {
+                padding: 8px 24px;
+                font-size: 0.9rem;
+            }
+            .empty-state-center {
+                padding: 40px 24px;
+                margin: 0 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1>Welcome back, <span id="userName">John Doe</span>!</h1>
+            <p>Your comprehensive health dashboard — manage appointments, connect with doctors, and share feedback</p>
+        </div>
+
+        <!-- Stats Grid - Full Width -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><ion-icon name="calendar-outline"></ion-icon></div>
+                <div class="stat-value" id="totalAppointments">0</div>
+                <div class="stat-label">Total Appointments</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><ion-icon name="medkit-outline"></ion-icon></div>
+                <div class="stat-value" id="upcomingAppointments">0</div>
+                <div class="stat-label">Upcoming Appointments</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><ion-icon name="heart-outline"></ion-icon></div>
+                <div class="stat-value" id="bmiValue">--</div>
+                <div class="stat-label">Current BMI</div>
+            </div>
+        </div>
+
+        <!-- Health Profile Card - Full Width -->
+        <div class="health-profile">
+            <div class="profile-header">
+                <h2>📋 Health Profile</h2>
+                <button class="edit-profile-btn" onclick="openProfileModal()">Edit Profile</button>
+            </div>
+            <div class="profile-grid">
+                <div class="profile-item">
+                    <label>Age</label>
+                    <div class="value" id="profileAge">--</div>
+                </div>
+                <div class="profile-item">
+                    <label>Height (cm)</label>
+                    <div class="value" id="profileHeight">--</div>
+                </div>
+                <div class="profile-item">
+                    <label>Weight (kg)</label>
+                    <div class="value" id="profileWeight">--</div>
+                </div>
+                <div class="profile-item">
+                    <label>BMI</label>
+                    <div class="value">
+                        <span id="profileBMI">--</span>
+                        <span class="bmi-indicator" id="bmiCategory"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Tabs -->
+        <div class="section-tabs">
+            <button class="tab-btn active" data-tab="appointments">📅 My Appointments</button>
+            <button class="tab-btn" data-tab="doctors">👨‍⚕️ Find Doctors</button>
+            <button class="tab-btn" data-tab="feedback">💬 My Feedback</button>
+        </div>
+
+        <!-- TAB 1: APPOINTMENTS -->
+        <div class="tab-content active" id="appointments-tab">
+            <div id="appointmentsContainer"></div>
+        </div>
+
+        <!-- TAB 2: DOCTORS -->
+        <div class="tab-content" id="doctors-tab">
+            <div id="doctorsContainer" class="full-width-grid"></div>
+        </div>
+
+        <!-- TAB 3: FEEDBACK -->
+        <div class="tab-content" id="feedback-tab">
+            <div id="feedbackContainer"></div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="profileModal"><div class="modal-content"><span class="close" onclick="closeModal('profileModal')">&times;</span><h2>Health Profile</h2><p style="opacity:0.7; margin-bottom:20px;">Update your vitals for better insights</p><input type="number" id="ageInput" placeholder="Age"><input type="number" id="heightInput" placeholder="Height (cm)" step="0.1"><input type="number" id="weightInput" placeholder="Weight (kg)" step="0.1"><div class="modal-buttons"><button class="btn-cancel" onclick="closeModal('profileModal')">Cancel</button><button class="btn-submit" onclick="saveHealthProfile()">Save Changes</button></div></div></div>
+
+    <div class="modal" id="bookingModal"><div class="modal-content"><span class="close" onclick="closeModal('bookingModal')">&times;</span><h2>Book Appointment</h2><input type="hidden" id="selectedDoctorId"><input type="hidden" id="selectedDoctorName"><p id="bookingDoctorName" style="margin-bottom:16px; font-weight:500;"></p><input type="date" id="appointmentDate"><select id="appointmentTime"><option value="09:00">09:00 AM</option><option value="10:00">10:00 AM</option><option value="11:00">11:00 AM</option><option value="14:00">02:00 PM</option><option value="15:00">03:00 PM</option><option value="16:00">04:00 PM</option></select><textarea id="appointmentNotes" placeholder="Additional notes (optional)" rows="2"></textarea><div class="modal-buttons"><button class="btn-cancel" onclick="closeModal('bookingModal')">Cancel</button><button class="btn-submit" onclick="bookAppointment()">Confirm Booking</button></div></div></div>
+
+    <div class="modal" id="feedbackModal"><div class="modal-content"><span class="close" onclick="closeModal('feedbackModal')">&times;</span><h2>Share Your Experience</h2><select id="feedbackDoctorId"><option value="">Select Doctor</option></select><div class="rating" id="ratingStars"><span class="star" data-rating="1">★</span><span class="star" data-rating="2">★</span><span class="star" data-rating="3">★</span><span class="star" data-rating="4">★</span><span class="star" data-rating="5">★</span></div><input type="hidden" id="feedbackRating" value="0"><textarea id="feedbackComment" placeholder="Your feedback helps us improve..." rows="3"></textarea><div class="modal-buttons"><button class="btn-cancel" onclick="closeModal('feedbackModal')">Cancel</button><button class="btn-submit" onclick="submitFeedback()">Submit Feedback</button></div></div></div>
+
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script>
+        let currentUser = { name: "John Doe", age: null, height: null, weight: null, bmi: null };
+        let appointments = [];
+        let feedbacks = [];
+
+        let doctors = [
+            { id: 1, name: "Dr. Sarah Johnson", specialty: "Cardiologist", experience: "12 years", avatar: "SJ", rating: 4.8 },
+            { id: 2, name: "Dr. Michael Chen", specialty: "Neurologist", experience: "8 years", avatar: "MC", rating: 4.9 },
+            { id: 3, name: "Dr. Emily Rodriguez", specialty: "Pediatrician", experience: "10 years", avatar: "ER", rating: 4.7 },
+            { id: 4, name: "Dr. James Wilson", specialty: "Dermatologist", experience: "7 years", avatar: "JW", rating: 4.6 },
+            { id: 5, name: "Dr. Lisa Anderson", specialty: "Orthopedist", experience: "15 years", avatar: "LA", rating: 4.9 },
+            { id: 6, name: "Dr. Robert Taylor", specialty: "Psychiatrist", experience: "11 years", avatar: "RT", rating: 4.8 }
+        ];
+
+        function loadData() {
+            const savedProfile = localStorage.getItem('userHealthProfile');
+            if (savedProfile) { const p = JSON.parse(savedProfile); currentUser.age = p.age; currentUser.height = p.height; currentUser.weight = p.weight; calculateAndUpdateBMI(); }
+            const savedApps = localStorage.getItem('appointments');
+            if (savedApps) appointments = JSON.parse(savedApps);
+            const savedFb = localStorage.getItem('feedbacks');
+            if (savedFb) feedbacks = JSON.parse(savedFb);
+            updateUI();
+        }
+
+        function calculateBMI(h, w) { if (h && w && h>0) return Math.round((w / ((h/100)**2)) * 10)/10; return null; }
+        function getBMICategory(bmi) { if (!bmi) return ""; if (bmi<18.5) return "Underweight"; if (bmi<25) return "Normal"; if (bmi<30) return "Overweight"; return "Obese"; }
+        function getBMIClass(bmi) { if (!bmi) return ""; if (bmi<18.5) return "bmi-underweight"; if (bmi<25) return "bmi-normal"; if (bmi<30) return "bmi-overweight"; return "bmi-obese"; }
+
+        function calculateAndUpdateBMI() {
+            if (currentUser.height && currentUser.weight) {
+                currentUser.bmi = calculateBMI(currentUser.height, currentUser.weight);
+                const cat = getBMICategory(currentUser.bmi);
+                const cls = getBMIClass(currentUser.bmi);
+                document.getElementById('profileBMI').textContent = currentUser.bmi;
+                document.getElementById('bmiValue').textContent = currentUser.bmi;
+                const span = document.getElementById('bmiCategory');
+                span.textContent = cat;
+                span.className = `bmi-indicator ${cls}`;
+            } else { document.getElementById('profileBMI').textContent = '--'; document.getElementById('bmiValue').textContent = '--'; document.getElementById('bmiCategory').textContent = ''; }
+        }
+
+        function saveHealthProfile() {
+            const age = parseInt(document.getElementById('ageInput').value);
+            const height = parseFloat(document.getElementById('heightInput').value);
+            const weight = parseFloat(document.getElementById('weightInput').value);
+            if (height && weight) {
+                currentUser.age = age; currentUser.height = height; currentUser.weight = weight;
+                calculateAndUpdateBMI();
+                document.getElementById('profileAge').textContent = age || '--';
+                document.getElementById('profileHeight').textContent = height;
+                document.getElementById('profileWeight').textContent = weight;
+                localStorage.setItem('userHealthProfile', JSON.stringify({ age, height, weight }));
+                closeModal('profileModal');
+                updateStats();
+            } else alert("Please fill height and weight");
+        }
+
+        function bookAppointment() {
+            const doctorId = parseInt(document.getElementById('selectedDoctorId').value);
+            const doctorName = document.getElementById('selectedDoctorName').value;
+            const date = document.getElementById('appointmentDate').value;
+            const time = document.getElementById('appointmentTime').value;
+            if (!date || !time) return alert("Select date & time");
+            appointments.push({ id: Date.now(), doctorId, doctorName, date, time, notes: document.getElementById('appointmentNotes').value, status: 'pending' });
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+            closeModal('bookingModal');
+            updateUI();
+            alert("✓ Appointment booked successfully!");
+        }
+
+        function cancelAppointment(id) {
+            if (confirm("Cancel this appointment?")) {
+                appointments = appointments.filter(a => a.id !== id);
+                localStorage.setItem('appointments', JSON.stringify(appointments));
+                updateUI();
+            }
+        }
+
+        function submitFeedback() {
+            const doctorId = parseInt(document.getElementById('feedbackDoctorId').value);
+            const rating = parseInt(document.getElementById('feedbackRating').value);
+            const comment = document.getElementById('feedbackComment').value;
+            if (!doctorId || rating === 0) return alert("Select doctor and rating");
+            const doctor = doctors.find(d => d.id === doctorId);
+            feedbacks.push({ id: Date.now(), doctorId, doctorName: doctor.name, rating, comment, date: new Date().toISOString() });
+            localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
+            closeModal('feedbackModal');
+            updateUI();
+            alert("Thank you for your feedback!");
+        }
+
+        function openBookingModal(id, name) {
+            document.getElementById('selectedDoctorId').value = id;
+            document.getElementById('selectedDoctorName').value = name;
+            document.getElementById('bookingDoctorName').innerHTML = `👨‍⚕️ Booking with ${name}`;
+            document.getElementById('bookingModal').classList.add('active');
+        }
+
+        function openProfileModal() {
+            document.getElementById('ageInput').value = currentUser.age || '';
+            document.getElementById('heightInput').value = currentUser.height || '';
+            document.getElementById('weightInput').value = currentUser.weight || '';
+            document.getElementById('profileModal').classList.add('active');
+        }
+
+        function openFeedbackModal() {
+            const sel = document.getElementById('feedbackDoctorId');
+            sel.innerHTML = '<option value="">Select Doctor</option>';
+            doctors.forEach(d => sel.innerHTML += `<option value="${d.id}">${d.name} - ${d.specialty}</option>`);
+            document.getElementById('feedbackRating').value = 0;
+            document.getElementById('feedbackComment').value = '';
+            document.querySelectorAll('#ratingStars .star').forEach(s => s.classList.remove('active'));
+            document.getElementById('feedbackModal').classList.add('active');
+            document.querySelectorAll('#ratingStars .star').forEach(star => {
+                star.onclick = () => {
+                    const r = parseInt(star.dataset.rating);
+                    document.getElementById('feedbackRating').value = r;
+                    document.querySelectorAll('#ratingStars .star').forEach((s, i) => i < r ? s.classList.add('active') : s.classList.remove('active'));
+                };
+            });
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function updateStats() {
+            document.getElementById('totalAppointments').textContent = appointments.length;
+            const upcoming = appointments.filter(a => new Date(a.date) >= new Date()).length;
+            document.getElementById('upcomingAppointments').textContent = upcoming;
+        }
+
+        function renderAppointments() {
+            const container = document.getElementById('appointmentsContainer');
+            if (!appointments.length) {
+                container.innerHTML = `
+                    <div class="empty-state-wrapper">
+                        <div class="empty-state-center">
+                            <div class="empty-icon">📅</div>
+                            <h3>No Appointments Yet</h3>
+                            <p>Book your first consultation with our expert doctors and start your wellness journey.</p>
+                            <button class="center-action-btn" onclick="switchToDoctorsTab()">➕ Book Your First Appointment</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = `<div class="full-width-grid">${appointments.map(apt => `
+                <div class="appointment-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                        <h3 style="font-size:1.25rem;">${apt.doctorName}</h3>
+                        <span class="status status-${apt.status}">${apt.status.toUpperCase()}</span>
+                    </div>
+                    <p style="color:var(--teal); margin:10px 0; font-weight:500;">📅 ${new Date(apt.date).toLocaleDateString()} at ${apt.time}</p>
+                    ${apt.notes ? `<p style="opacity:0.7; font-size:0.85rem;">📝 ${apt.notes}</p>` : ''}
+                    <button class="cancel-appointment-btn" onclick="cancelAppointment(${apt.id})">Cancel Appointment</button>
+                </div>
+            `).join('')}</div>`;
+        }
+
+        function renderFeedbacks() {
+            const container = document.getElementById('feedbackContainer');
+            if (!feedbacks.length) {
+                container.innerHTML = `
+                    <div class="empty-state-wrapper">
+                        <div class="empty-state-center">
+                            <div class="empty-icon">💬</div>
+                            <h3>No Feedback Yet</h3>
+                            <p>Share your experience with our doctors and help others make informed choices.</p>
+                            <button class="center-action-btn" onclick="openFeedbackModal()">✍️ Write Your First Feedback</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = `<div class="full-width-grid">${feedbacks.map(fb => `
+                <div class="feedback-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3>${fb.doctorName}</h3>
+                        <div class="rating-stars">${'★'.repeat(fb.rating)}${'☆'.repeat(5-fb.rating)}</div>
+                    </div>
+                    <p class="feedback-comment">“${fb.comment}”</p>
+                    <p style="opacity:0.4; font-size:0.7rem;">${new Date(fb.date).toLocaleDateString()}</p>
+                </div>
+            `).join('')}</div>`;
+        }
+
+        function renderDoctors() {
+            const container = document.getElementById('doctorsContainer');
+            container.innerHTML = doctors.map(doc => `
+                <div class="doctor-card">
+                    <div class="doctor-header">
+                        <div class="doctor-avatar">${doc.avatar}</div>
+                        <div class="doctor-info">
+                            <h3>${doc.name}</h3>
+                            <p>${doc.experience} • ⭐ ${doc.rating}</p>
+                        </div>
+                    </div>
+                    <div class="doctor-specialty">${doc.specialty}</div>
+                    <button class="book-btn" onclick="openBookingModal(${doc.id}, '${doc.name}')">Book Appointment</button>
+                </div>
+            `).join('');
+        }
+
+        function switchToDoctorsTab() {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('.tab-btn[data-tab="doctors"]').classList.add('active');
+            document.getElementById('doctors-tab').classList.add('active');
+        }
+
+        function updateUI() {
+            updateStats();
+            renderAppointments();
+            renderDoctors();
+            renderFeedbacks();
+            document.getElementById('profileAge').textContent = currentUser.age || '--';
+            document.getElementById('profileHeight').textContent = currentUser.height || '--';
+            document.getElementById('profileWeight').textContent = currentUser.weight || '--';
+            calculateAndUpdateBMI();
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(`${tab}-tab`).classList.add('active');
+            });
+        });
+
+        window.onclick = (e) => { if (e.target.classList.contains('modal')) e.target.classList.remove('active'); };
+        loadData();
+    </script>
+</body>
+</html>
