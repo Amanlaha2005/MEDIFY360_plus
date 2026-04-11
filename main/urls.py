@@ -40,4 +40,10 @@ urlpatterns = [
     path("approve-driver/<int:id>/", views.approve_driver),
     path("reject-driver/<int:id>/", views.reject_driver),
     path("dashboard-data/", views.get_dashboard_data),
+    path("check-doctor-status/<int:doctor_id>/", views.check_doctor_status),
+    path("add-feedback/", views.add_feedback),
+    path("get-feedbacks/", views.get_feedbacks),
+    path("get-profile/", views.get_profile),
+    path("update-profile/", views.update_profile),
+    path("upload-avatar/", views.upload_avatar),
 ]

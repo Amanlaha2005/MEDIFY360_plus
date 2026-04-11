@@ -936,7 +936,7 @@
 
     <script>
             // ---------- Data ----------
-            
+       let feedbacks = [];     
   function loadTodayVisitors() {
 
     fetch("/get-today-opd-bills/")
@@ -1088,7 +1088,17 @@
 
             let ambulanceDrivers =[];
 
-            let feedbacks =[];
+           function loadFeedbacks() {
+    fetch("/get-feedbacks/")
+    .then(res => res.json())
+    .then(data => {
+
+        feedbacks = data.feedbacks;
+
+        // 🔥 re-render dashboard AFTER data comes
+        document.getElementById("mainContent").innerHTML = renderDashboard();
+    });
+}
 
            
 
@@ -1416,13 +1426,13 @@ function viewDriver(id) {
                             (fb) =>
                               `<tr>
                                 <td>${fb.patient}</td>
-                                <td>${fb.doctorName}</td>
+                                <td>-</td>
                                 <td>
                                     <span class="rating-star">
                                         ${"★".repeat(fb.rating)}${"☆".repeat(5 - fb.rating)}
                                     </span> ${fb.rating}/5
                                 </td>
-                                <td>${fb.comment}</td>
+                                <td>${fb.comment || "No comment"}</td>
                               </tr>`
                           ).join("")
                         : `<tr><td colspan="4" style="text-align:center">No feedback yet</td></tr>`
@@ -1471,6 +1481,7 @@ function loadDashboard() {
             </div>
         `;
     });
+    loadFeedbacks();
 }
 
             // Doctors section with improved card spacing
@@ -2199,8 +2210,12 @@ function renderSection(section) {
     let content = "";
 
     if (section === "dashboard") {
-        content = renderDashboard();
-    }
+    document.getElementById("mainContent").innerHTML = `
+        <h2>Loading Dashboard...</h2>
+    `;
+    loadDashboard();   // ✅ ONLY LOAD
+    return;
+}
     else if (section === "citizens") {
         loadCitizens();
         return;

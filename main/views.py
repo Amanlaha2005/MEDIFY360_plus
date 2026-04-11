@@ -433,25 +433,30 @@ def add_citizen(request):
 
 
 # GET ALL CITIZENS
+from django.db.models import Avg, Count
+
+from django.contrib.auth.models import User
+from django.db.models import Avg
+from .models import Feedback
+
 def get_citizens(request):
-    citizens = Profile.objects.filter(role="CITIZEN")
+
+    citizens = User.objects.filter(profile__role="CITIZEN")
 
     data = []
 
-    for p in citizens:
-        data.append({
-            "id": p.user.id,
-            "username": p.user.username,
-            "email": p.user.email,
-            "role": p.role,
+    for user in citizens:
 
-            # 🔥 NEW
-            "avgRating": 0,        # later connect feedback DB
-            "feedbackCount": 0
+        feedbacks = Feedback.objects.filter(user=user)
+
+        data.append({
+            "id": user.id,
+            "username": user.username,
+            "avgRating": feedbacks.aggregate(Avg('rating'))['rating__avg'] or 0,
+            "feedbackCount": feedbacks.count()
         })
 
     return JsonResponse({"citizens": data})
-
 
 # DELETE CITIZEN
 @csrf_exempt
@@ -528,6 +533,7 @@ def delete_doctor(request, id):
     return JsonResponse({"status": "success"})
 
 @csrf_exempt
+@csrf_exempt
 def add_timing(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -600,9 +606,15 @@ def get_timings(request):
 
     return JsonResponse({"timings": data})
 
+
 from django.utils import timezone
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
+import json
+
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from datetime import datetime
 import json
 
 @csrf_exempt
@@ -612,83 +624,136 @@ def add_appointment(request):
 
         doctor = Doctor.objects.get(id=data["doctorId"])
 
-        date = datetime.strptime(data["date"], "%Y-%m-%d").date()
-        time_str = data["time"]
+        date_str = data.get("date")
+        time_str = data.get("time")
 
-        try:
-            # try HH:MM
-            time = datetime.strptime(time_str, "%H:%M").time()
-        except:
-            # fallback HH:MM:SS
-            time = datetime.strptime(time_str, "%H:%M:%S").time()
+        now = timezone.now()
 
         timings = DoctorTiming.objects.filter(doctor=doctor)
 
+        # ❌ NO SCHEDULE
         if not timings.exists():
-            return JsonResponse({"error": "Doctor timing not set ❌"})
+            return JsonResponse({"error": "schedule_not_set"})
 
         valid = False
-        now = timezone.now()
+        date = None
+        time = None
 
         for t in timings:
 
-            # ✅ REGULAR
+            # =========================
+            # 🔥 CASE 1: AUTO (NO DATE/TIME FROM CLIENT)
+            # =========================
+            if not date_str or not time_str:
+
+                # use admin timing
+                date = t.start_date if t.start_date else timezone.now().date()
+                time = t.start_time
+
+            else:
+                # =========================
+                # 🔥 CASE 2: NORMAL INPUT
+                # =========================
+                try:
+                    date = datetime.strptime(date_str, "%Y-%m-%d").date()
+                except:
+                    return JsonResponse({"error": "invalid_date"})
+
+                try:
+                    time = datetime.strptime(time_str, "%H:%M").time()
+                except:
+                    try:
+                        time = datetime.strptime(time_str, "%H:%M:%S").time()
+                    except:
+                        return JsonResponse({"error": "invalid_time"})
+
+            # =========================
+            # ✅ REGULAR TIMING
+            # =========================
             if t.timing_type == "REGULAR":
                 if t.start_time <= time <= t.end_time:
                     valid = True
 
-            # ✅ CUSTOM
+            # =========================
+            # ✅ CUSTOM TIMING
+            # =========================
             if t.timing_type == "CUSTOM":
+
+                # 📅 Check date range
                 if t.start_date and t.end_date:
-                    if t.start_date <= date <= t.end_date:
+                    if not (t.start_date <= date <= t.end_date):
+                        continue
 
-                        if t.start_time <= time <= t.end_time:
+                # ⏰ Check time range
+                if not (t.start_time <= time <= t.end_time):
+                    continue
 
-                            if t.booking_start and t.booking_end:
-                                if t.booking_start <= now <= t.booking_end:
-                                    valid = True
-                                else:
-                                    continue  # 🔥 DON'T RETURN HERE
-                            else:
-                                valid = True
+                # 🟡 Booking window
+                if t.booking_start and t.booking_end:
 
+                    booking_start = timezone.localtime(t.booking_start)
+                    booking_end = timezone.localtime(t.booking_end)
+                    current_time = timezone.localtime(now)
+
+                    if current_time < booking_start:
+                        return JsonResponse({"error": "not_started"})
+
+                    elif current_time > booking_end:
+                        return JsonResponse({"error": "closed"})
+
+                    else:
+                        valid = True
+
+                else:
+                    valid = True
+
+        # ❌ NOT AVAILABLE
         if not valid:
-            return JsonResponse({"error": "Booking not started or doctor not available ❌"})
+            return JsonResponse({"error": "not_available"})
+
+        # =========================
+        # ✅ SAVE APPOINTMENT
+        # =========================
         Appointment.objects.create(
+            user=request.user,
             doctor=doctor,
-            patient_name=data["patient"],
+            patient_name=data.get("patient"),
             date=date,
             time=time,
         )
 
         return JsonResponse({"status": "success"})
 
-    return JsonResponse({"error": "Invalid request"})
+    return JsonResponse({"error": "invalid_request"})
 
 from django.utils import timezone
 
 def get_appointments(request):
+
     now = timezone.now()
 
-    appts = Appointment.objects.all()
-
+    appts = Appointment.objects.filter(user=request.user)
     filtered = []
 
     for a in appts:
+
+        appointment_datetime = datetime.combine(a.date, a.time)
+
+        # ✅ Convert BOTH same way
         appointment_datetime = timezone.make_aware(
-            datetime.combine(a.date, a.time)
+            appointment_datetime, timezone.get_current_timezone()
         )
 
-        if appointment_datetime >= now:
-            filtered.append({
-                "id": a.id,
-                "doctor": a.doctor.name,
-                "doctorId": a.doctor.id,
-                "patient": a.patient_name,
-                "date": str(a.date),
-                "time": str(a.time),
-                "status": a.status
-            })
+        
+        filtered.append({
+            "id": a.id,
+            "doctor": a.doctor.name,
+            "doctorId": a.doctor.id,
+            "patient": a.patient_name,
+            "date": str(a.date),
+            "time": str(a.time),
+            "status": a.status
+        })
 
     return JsonResponse({"appointments": filtered})
 @csrf_exempt
@@ -872,3 +937,148 @@ def get_drivers(request):
         })
 
     return JsonResponse({"drivers": data})
+
+from django.utils import timezone
+
+def check_doctor_status(request, doctor_id):
+
+    now = timezone.localtime()   # 🔥 VERY IMPORTANT
+
+    timings = DoctorTiming.objects.filter(doctor_id=doctor_id)
+
+    if not timings.exists():
+        return JsonResponse({"status": "schedule_not_set"})
+
+    for t in timings:
+
+        # ✅ REGULAR
+        if t.timing_type == "REGULAR":
+            return JsonResponse({"status": "open"})
+
+        # ✅ CUSTOM
+        if t.timing_type == "CUSTOM":
+
+            if not t.booking_start or not t.booking_end:
+                continue
+
+            # 🔥 FORCE SAME TIMEZONE
+            booking_start = timezone.localtime(t.booking_start)
+            booking_end = timezone.localtime(t.booking_end)
+
+            # DEBUG (optional)
+            print("NOW:", now)
+            print("START:", booking_start)
+
+            # ⏳ BEFORE START
+            if now < booking_start:
+                return JsonResponse({
+                    "status": "not_started",
+                    "start": str(booking_start)
+                })
+
+            # ✅ THIS IS MOST IMPORTANT PART
+            elif booking_start <= now <= booking_end:
+                return JsonResponse({"status": "open"})
+
+            # 🕒 AFTER END
+            elif now > booking_end:
+                return JsonResponse({
+                    "status": "ended",
+                    "start": str(booking_start),
+                    "end": str(booking_end)
+                })
+
+    return JsonResponse({"status": "schedule_not_set"})
+from .models import Feedback
+@csrf_exempt
+def add_feedback(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+
+        Feedback.objects.create(
+            user=request.user,
+            
+            rating=data["rating"],
+            comment=data["comment"]
+        )
+
+        return JsonResponse({"status": "success"})
+    
+def get_feedbacks(request):
+
+    if request.user.profile.role == "ADMIN":
+        feedbacks = Feedback.objects.all()   # admin sees all
+    else:
+        feedbacks = Feedback.objects.filter(user=request.user)  # citizen sees own
+
+    data = []
+
+    for f in feedbacks:
+        data.append({
+            "patient": f.user.username,
+            "rating": f.rating,
+            "comment": f.comment
+        })
+
+    return JsonResponse({"feedbacks": data})
+
+def get_profile(request):
+    profile = request.user.profile
+
+    return JsonResponse({
+        "name": request.user.username,
+        "email": request.user.email,
+        "age": profile.age,
+        "height": profile.height,
+        "weight": profile.weight,
+        "bmi": profile.bmi,
+        "image": profile.image.url if profile.image else ""
+    })
+    
+@csrf_exempt
+def update_profile(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+
+        profile = request.user.profile
+
+        age = data.get("age")
+        height = data.get("height")
+        weight = data.get("weight")
+
+        # 🔥 VALIDATION
+        if not height or not weight:
+            return JsonResponse({"error": "height_weight_required"})
+
+        # 🔥 BMI CALCULATION
+        height_m = float(height) / 100
+        bmi = float(weight) / (height_m ** 2)
+
+        profile.age = age
+        profile.height = height
+        profile.weight = weight
+        profile.bmi = round(bmi, 2)
+
+        profile.save()
+
+        return JsonResponse({"status": "success", "bmi": profile.bmi})
+    
+@csrf_exempt
+def upload_avatar(request):
+    if request.method == "POST":
+
+        image = request.FILES.get("image")
+
+        if not image:
+            return JsonResponse({"error": "no_image"})
+
+        profile = request.user.profile
+        profile.image = image   # make sure field exists
+        profile.save()
+
+        return JsonResponse({
+            "status": "success",
+            "image_url": profile.image.url
+        })
+
+    return JsonResponse({"error": "invalid"})

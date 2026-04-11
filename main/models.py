@@ -23,6 +23,11 @@ class Profile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='CITIZEN')
+    image = models.ImageField(upload_to='profile/', null=True, blank=True)
+    age = models.IntegerField(null=True, blank=True)
+    height = models.FloatField(null=True, blank=True)
+    weight = models.FloatField(null=True, blank=True)
+    bmi = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.role}"
@@ -81,13 +86,15 @@ class DoctorTiming(models.Model):
     def __str__(self):
         return f"{self.doctor.name} - {self.timing_type}"
     
+from django.contrib.auth.models import User
+
 class Appointment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)  # 🔥 ADD THIS
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     patient_name = models.CharField(max_length=100)
     date = models.DateField()
     time = models.TimeField()
-    status = models.CharField(max_length=20, default="confirmed")
-
+    status = models.CharField(max_length=20, default="pending")
     def __str__(self):
         return f"{self.patient_name} - {self.doctor.name}"
     
@@ -150,3 +157,9 @@ class Driver(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Feedback(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField()
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
