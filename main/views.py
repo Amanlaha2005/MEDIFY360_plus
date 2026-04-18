@@ -163,7 +163,7 @@ def login_user(request):
     if request.method == "POST":
         username_or_email = request.POST.get("username")
         password = request.POST.get("password")
-        role = request.POST.get("role")
+        selected_role = request.POST.get("role")  # 🔥 frontend role
 
         # 🔥 HANDLE EMAIL LOGIN
         if "@" in username_or_email:
@@ -180,6 +180,23 @@ def login_user(request):
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
+
+            # 🔥 GET ROLE FROM DATABASE (IMPORTANT)
+            try:
+                profile = Profile.objects.get(user=user)
+                db_role = profile.role   # ADMIN / STAFF / CITIZEN / DRIVER
+            except Profile.DoesNotExist:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Profile not found"
+                })
+
+            # ❌ ROLE MISMATCH CHECK
+            if selected_role.upper() != db_role:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Invalid credentials for selected role ❌"
+                })
 
             # 🔥 STAFF APPROVAL CHECK
             try:
@@ -219,41 +236,38 @@ def login_user(request):
             except Driver.DoesNotExist:
                 pass
 
-            # ✅ LOGIN ONLY AFTER APPROVAL
+            # ✅ LOGIN AFTER ALL CHECKS
             login(request, user)
 
-            # 🔥 ADMIN LOGIN
-            if role == "Admin":
-                if user.is_superuser:
-                    return JsonResponse({
-                        "status": "success",
-                        "redirect": "/admin-dashboard/"
-                    })
-                else:
-                    return JsonResponse({
-                        "status": "error",
-                        "message": "You are not admin"
-                    })
+            # 🔥 REDIRECT BASED ON DB ROLE (NOT FRONTEND)
+            if db_role == "ADMIN":
+                return JsonResponse({
+                    "status": "success",
+                    "redirect": "/admin-dashboard/"
+                })
 
-            # 🔥 STAFF LOGIN
-            elif role == "Staff":
+            elif db_role == "STAFF":
                 return JsonResponse({
                     "status": "success",
                     "redirect": "/staff-dashboard/"
                 })
 
-            # 🔥 DRIVER LOGIN (OPTIONAL)
-            elif role == "Driver":
+            elif db_role == "DRIVER":
                 return JsonResponse({
                     "status": "success",
                     "redirect": "/staff-dashboard/"
                 })
 
-            # 🔥 CITIZEN LOGIN
-            else:
+            elif db_role == "CITIZEN":
                 return JsonResponse({
                     "status": "success",
                     "redirect": "/client-dashboard/"
+                })
+
+            else:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Invalid role"
                 })
 
         return JsonResponse({
@@ -262,6 +276,15 @@ def login_user(request):
         })
 
     return JsonResponse({"status": "error"})
+
+
+
+
+
+
+
+
+
 
 def get_pending_requests(request):
 
@@ -275,7 +298,7 @@ def get_pending_requests(request):
         "staff": staff_data,
         "drivers": driver_data
     })
-    
+@csrf_exempt 
 def approve_staff(request, id):
     staff = Staff.objects.get(id=id)
     staff.approval_status = "approved"
@@ -306,12 +329,31 @@ def register_user(request):
         username = request.POST.get("username")
         email = request.POST.get("email")
         password = request.POST.get("password")
+        role = request.POST.get("role")   # 🔥 ADD THIS
 
         if User.objects.filter(username=username).exists():
             return JsonResponse({"status": "error"})
 
-        user = User.objects.create_user(username=username, email=email, password=password)
-        Profile.objects.get_or_create(user=user)
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password
+        )
+
+        profile, created = Profile.objects.get_or_create(user=user)
+
+        # 🔥 SET ROLE PROPERLY
+        profile.role = role.upper()
+        profile.save()
+        from .models import Staff
+
+        if role.upper() == "STAFF":
+            Staff.objects.create(
+                user=user,
+                name=username,
+                email=email,
+                approval_status="pending"
+            )
 
         return JsonResponse({"status": "success"})
 
@@ -901,23 +943,7 @@ def update_opd_bill(request, id):
         except OPDBill.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Not found"})
         
-def get_staff(request):
-    staff = Staff.objects.all()
 
-    data = []
-    for s in staff:
-        data.append({
-            "id": s.id,
-            "name": s.name,
-            "email": s.email,
-            "phone": s.phone,
-            "address": s.address,
-            "image": s.image.url if s.image else "",
-            "aadhaar": s.aadhaar.url if s.aadhaar else "",
-            "status": s.status
-        })
-
-    return JsonResponse({"staff": data})
 
 def get_drivers(request):
     drivers = Driver.objects.all()
@@ -1021,7 +1047,7 @@ def get_feedbacks(request):
         })
 
     return JsonResponse({"feedbacks": data})
-
+from django.views.decorators.csrf import csrf_exempt
 def get_profile(request):
     profile = request.user.profile
 
@@ -1082,3 +1108,424 @@ def upload_avatar(request):
         })
 
     return JsonResponse({"error": "invalid"})
+
+from django.utils import timezone
+from django.http import JsonResponse
+import json
+from .models import StaffAttendance
+@csrf_exempt
+def start_staff_session(request):
+    if request.method == "POST":
+
+        # 🔥 CHECK IF ALREADY ACTIVE
+        existing = StaffAttendance.objects.filter(
+            staff=request.user,
+            end_time__isnull=True
+        ).first()
+
+        if existing:
+            return JsonResponse({
+                "status": "already_active",
+                "id": existing.id
+            })
+
+        attendance = StaffAttendance.objects.create(
+            staff=request.user,
+            start_time=timezone.now()
+        )
+
+        return JsonResponse({
+            "status": "started",
+            "id": attendance.id
+        })
+
+@csrf_exempt  
+def end_staff_session(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+
+        session_id = data.get("sessionId")
+
+        try:
+            attendance = StaffAttendance.objects.get(id=session_id)
+        except:
+            return JsonResponse({"error": "session_not_found"})
+
+        end_time = timezone.now()
+
+        duration = (end_time - attendance.start_time).total_seconds() / 3600
+
+        attendance.end_time = end_time
+        attendance.duration = round(duration, 4)
+        attendance.save()
+
+        return JsonResponse({"status": "ended"})
+    
+from django.utils import timezone
+from datetime import timedelta
+from collections import defaultdict
+
+def get_staff_sessions(request):
+
+    today = timezone.localdate()
+    one_month_ago = today - timedelta(days=30)
+
+    sessions = StaffAttendance.objects.filter(
+        staff=request.user,
+        start_time__date__gte=one_month_ago
+    ).order_by("-start_time")
+
+    # 🔥 ADD HERE (FILTER PART)
+    date_filter = request.GET.get("date")
+    month_filter = request.GET.get("month")
+
+    if date_filter:
+        sessions = sessions.filter(start_time__date=date_filter)
+
+    if month_filter:
+        year, month = month_filter.split("-")
+        sessions = sessions.filter(
+            start_time__year=year,
+            start_time__month=month
+        )
+    grouped = defaultdict(lambda: {
+        "total_hours": 0,
+        "sessions": []
+    })
+
+    for s in sessions:
+        date = timezone.localtime(s.start_time).strftime("%Y-%m-%d")
+
+        duration = s.duration or 0
+
+        grouped[date]["total_hours"] += duration
+
+        grouped[date]["sessions"].append({
+            "start": timezone.localtime(s.start_time).strftime("%Y-%m-%d %H:%M"),
+            "end": timezone.localtime(s.end_time).strftime("%Y-%m-%d %H:%M") if s.end_time else None,
+            "duration": round(duration, 2)
+        })
+
+    result = []
+    today_str = timezone.localdate().strftime("%Y-%m-%d")
+    for date, data in grouped.items():
+        result.append({
+            "date": date,
+            "total_hours": round(data["total_hours"], 2),
+            "sessions": data["sessions"],
+            "is_today": (date == today_str)
+        })
+
+    return JsonResponse({"data": result})
+from django.utils import timezone
+from .models import StaffAttendance
+
+def get_staff(request):
+    from django.utils import timezone
+    staff_list = Staff.objects.all()
+
+    data = []
+
+    for s in staff_list:
+
+            active_session = StaffAttendance.objects.filter(
+                staff=s.user,
+                end_time__isnull=True
+            ).first()
+
+            sessions = StaffAttendance.objects.filter(staff=s.user)
+            total_hours = sum([sess.duration for sess in sessions if sess.duration])
+
+            today_sessions = StaffAttendance.objects.filter(
+                staff=s.user,
+                start_time__date=timezone.localdate()
+            )
+
+            from django.utils import timezone
+
+            today_hours = 0
+
+            for t in today_sessions:
+
+                # ✅ Completed session
+                if t.duration:
+                    today_hours += t.duration
+
+                # 🔥 LIVE SESSION (THIS WAS MISSING)
+                elif t.start_time and not t.end_time:
+                    now = timezone.now()
+                    diff = (now - t.start_time).total_seconds() / 3600
+                    today_hours += diff
+            data.append({
+                "email": s.email,
+                "phone": s.phone,
+                "address": s.address,
+                "id": s.id,
+                "name": s.name,
+                "image": s.user.profile.image.url if s.user.profile.image else "",
+                "today_hours": round(today_hours, 4),
+                "hours": round(total_hours, 2),
+                "approval_status": s.approval_status,
+                "status": "Online" if active_session else "Offline"
+            })
+
+        # 🔥 RETURN OUTSIDE LOOP
+    return JsonResponse({"staff": data})
+
+from collections import defaultdict
+from django.utils import timezone
+from datetime import timedelta
+from django.http import JsonResponse
+
+def get_staff_history(request, staff_id):
+
+    from .models import Staff
+
+    staff_obj = Staff.objects.get(id=staff_id)
+
+    sessions = StaffAttendance.objects.filter(
+        staff=staff_obj.user   # 🔥 CORRECT
+    )
+
+    # 🔥 FILTER
+    date_filter = request.GET.get("date")
+    month_filter = request.GET.get("month")
+
+    if date_filter:
+        sessions = sessions.filter(start_time__date=date_filter)
+
+    elif month_filter:
+        year, month = month_filter.split("-")
+        sessions = sessions.filter(
+            start_time__year=year,
+            start_time__month=month
+        )
+
+    else:
+        # 🔥 LAST 7 DAYS
+        last_7 = timezone.now() - timedelta(days=7)
+        sessions = sessions.filter(start_time__gte=last_7)
+
+    # 🔥 GROUP DATA
+    daily = defaultdict(float)
+
+    for s in sessions:
+
+        date = s.start_time.strftime("%Y-%m-%d")
+
+        if s.duration:
+            daily[date] += s.duration
+
+        elif s.start_time and not s.end_time:
+            now = timezone.now()
+            diff = (now - s.start_time).total_seconds() / 3600
+            daily[date] += diff
+
+    # 🔥 CONVERT TO LIST
+    data = [
+        {"date": d, "hours": round(h, 2)}
+        for d, h in daily.items()
+    ]
+
+    # 🔥 SORT
+    data = sorted(data, key=lambda x: x["date"], reverse=True)
+    print("SESSIONS:", sessions.count())
+    print("DATA:", data)
+    return JsonResponse({"history": data})
+
+
+
+
+
+
+
+from django.utils import timezone
+
+def get_current_session(request):
+    session = StaffAttendance.objects.filter(
+        staff=request.user,
+        end_time__isnull=True
+    ).order_by("-start_time").first()
+
+    if session:
+        return JsonResponse({
+            "active": True,
+            "id": session.id,
+            "start_time": timezone.localtime(session.start_time).strftime("%Y-%m-%d %H:%M:%S"),
+            "start_display": timezone.localtime(session.start_time).strftime("%I:%M %p")
+        })
+    else:
+        return JsonResponse({
+            "active": False
+        })
+
+from django.utils import timezone
+from datetime import datetime, time
+
+def get_today_hours(request):
+
+    today = timezone.localdate()
+
+    sessions = StaffAttendance.objects.filter(
+        staff=request.user,
+        start_time__date=today
+    )
+
+    total_hours = sum([s.duration for s in sessions if s.duration])
+
+    return JsonResponse({
+        "today_hours": round(total_hours, 2)
+    })
+    
+from django.utils import timezone
+from datetime import timedelta
+
+def get_weekly_hours(request):
+
+    today = timezone.localdate()
+    days = []
+    hours = []
+
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+
+        sessions = StaffAttendance.objects.filter(
+            staff=request.user,
+            start_time__date=day
+        )
+
+        total = sum([s.duration for s in sessions if s.duration])
+
+        days.append(day.strftime("%a"))   # Mon, Tue
+        hours.append(round(total, 2))
+
+    return JsonResponse({
+        "labels": days,
+        "data": hours
+    })
+def get_last_session(request):
+
+    session = StaffAttendance.objects.filter(
+        staff=request.user,
+        end_time__isnull=False
+    ).order_by("-end_time").first()
+
+    if not session:
+        return JsonResponse({"exists": False})
+
+    return JsonResponse({
+        "exists": True,
+        "duration": round(session.duration, 2),
+        "end_time": timezone.localtime(session.end_time).strftime("%I:%M %p"),
+        "date": timezone.localtime(session.end_time).strftime("%d %b")
+    })
+
+import csv
+from django.http import HttpResponse
+from django.utils import timezone
+
+def export_attendance(request):
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="attendance.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(["Date", "Start Time", "End Time", "Duration (hrs)"])
+
+    sessions = StaffAttendance.objects.filter(
+        staff=request.user
+    ).order_by("-start_time")
+
+    for s in sessions:
+        start = timezone.localtime(s.start_time).strftime("%Y-%m-%d %H:%M")
+        end = timezone.localtime(s.end_time).strftime("%Y-%m-%d %H:%M") if s.end_time else "-"
+        duration = s.duration if s.duration else 0
+
+        writer.writerow([start.split(" ")[0], start.split(" ")[1], end, duration])
+
+    return response
+
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import StaffMessage
+@csrf_exempt
+def send_message(request):
+    data = json.loads(request.body)
+
+    StaffMessage.objects.create(
+        sender=request.user,
+        message=data.get("message")
+    )
+
+    return JsonResponse({"status": "success"})
+
+def get_messages(request):
+    msgs = StaffMessage.objects.all().order_by("-timestamp")[:20]
+
+    data = []
+    for m in msgs:
+        data.append({
+            "user": m.sender.username,
+            "msg": m.message,
+            "time": m.timestamp.strftime("%H:%M")
+        })
+
+    return JsonResponse({"messages": data[::-1]})
+
+def monthly_analytics(request):
+
+    from django.utils import timezone
+    from datetime import timedelta
+
+    today = timezone.localdate()
+    days = []
+    hours = []
+
+    for i in range(29, -1, -1):
+        day = today - timedelta(days=i)
+
+        sessions = StaffAttendance.objects.filter(
+            staff=request.user,
+            start_time__date=day
+        )
+
+        total = sum([s.duration for s in sessions if s.duration])
+
+        days.append(day.strftime("%d"))
+        hours.append(round(total, 2))
+
+    return JsonResponse({
+        "labels": days,
+        "data": hours
+    })
+
+from django.db.models.functions import TruncDate
+
+def performance_score(request):
+
+    from django.utils import timezone
+    from datetime import timedelta
+
+    today = timezone.localdate()
+    last_30 = today - timedelta(days=30)
+
+    sessions = StaffAttendance.objects.filter(
+        staff=request.user,
+        start_time__date__gte=last_30
+    )
+
+    total_hours = sum([s.duration for s in sessions if s.duration])
+
+    # 🔥 COUNT ACTIVE DAYS
+    active_days = sessions.annotate(
+        day=TruncDate("start_time")
+    ).values("day").distinct().count()
+
+    # 🔥 SAFE CALCULATION
+    max_hours = active_days * 8 if active_days else 1
+
+    percentage = (total_hours / max_hours) * 100
+
+    return JsonResponse({
+        "score": round(percentage, 2)
+    })

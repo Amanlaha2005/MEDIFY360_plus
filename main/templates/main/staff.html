@@ -1,0 +1,930 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <link rel="icon" href="{% static 'assets/logo.png' %}" type="image/png" sizes="48x48">
+  <title>Medify360 | Staff Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #0a1927;
+      --navy-light: #11212e;
+      --accent: #00b8a9;
+      --accent-light: #2dd4bf;
+      --accent-dark: #009688;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --gray-50: #e2e8f0;
+      --gray-100: #cbd5e1;
+      --gray-200: #94a3b8;
+      --gray-300: #64748b;
+      --gray-600: #94a3b8;
+      --gray-700: #cbd5e1;
+      --gray-800: #e2e8f0;
+      --gray-900: #f1f5f9;
+      --card-bg: #11212e;
+      --sidebar-bg: #07141c;
+      --border-light: #1e2a36;
+      --white: #ffffff;
+      --teal: #00b8a9;
+    }
+    body {
+      font-family: "Inter", sans-serif;
+      background: var(--navy);
+      color: var(--gray-900);
+      overflow-x: hidden;
+    }
+    /* Header / Top Bar */
+    .top-bar {
+      background: var(--sidebar-bg);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-light);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .logo img {
+      width: 45px;
+      height: 35px;
+      border-radius: 8px;
+      padding: 4px;
+    }
+    .logo p {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .medify { color: var(--white); }
+    .number { color: var(--teal); }
+    .staff-info {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .staff-name {
+      font-weight: 500;
+      color: var(--gray-100);
+    }
+    .logout-btn {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      padding: 8px 18px;
+      border-radius: 30px;
+      color: #ff8a8a;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logout-btn:hover {
+      background: rgba(239,68,68,0.25);
+      transform: translateY(-1px);
+    }
+    /* Main container */
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 40px;
+    }
+    /* Status Card */
+    .status-card {
+      background: var(--card-bg);
+      border-radius: 28px;
+      border: 1px solid var(--border-light);
+      padding: 32px;
+      margin-bottom: 40px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .status-icon {
+      width: 90px;
+      height: 90px;
+      background: rgba(0,184,169,0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .status-icon i {
+      font-size: 48px;
+      color: var(--accent);
+    }
+    .status-text {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 6px 18px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+    .badge-online {
+      background: rgba(16,185,129,0.2);
+      color: var(--success);
+      border: 1px solid rgba(16,185,129,0.3);
+    }
+    .badge-offline {
+      background: rgba(100,116,139,0.2);
+      color: var(--gray-200);
+      border: 1px solid rgba(100,116,139,0.3);
+    }
+    .toggle-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .toggle-btn.offline {
+      background: var(--gray-300);
+      color: var(--gray-900);
+    }
+    .toggle-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+    .last-session {
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: var(--gray-300);
+    }
+    /* Stats row */
+    .stats-row {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+    .stat-mini {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 20px 28px;
+      flex: 1;
+      min-width: 180px;
+      border: 1px solid var(--border-light);
+      text-align: center;
+    }
+    .stat-mini .value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--white);
+    }
+    .stat-mini .label {
+      color: var(--gray-300);
+      font-size: 0.85rem;
+      margin-top: 6px;
+    }
+    /* History Table */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+    .data-table {
+      background: var(--card-bg);
+      border-radius: 20px;
+      overflow-x: auto;
+      border: 1px solid var(--border-light);
+      margin-bottom: 32px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th {
+      padding: 16px 20px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--gray-200);
+      background: rgba(0,0,0,0.2);
+      border-bottom: 1px solid var(--border-light);
+    }
+    td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--gray-300);
+    }
+    tr:hover td {
+      background: rgba(255,255,255,0.03);
+    }
+    .empty-row td {
+      text-align: center;
+      padding: 40px;
+      color: var(--gray-500);
+    }
+    .btn-small {
+      background: rgba(239,68,68,0.2);
+      border: none;
+      padding: 4px 12px;
+      border-radius: 20px;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+    .btn-small:hover {
+      background: rgba(239,68,68,0.4);
+    }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px;
+      color: var(--gray-500);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border-light);
+    }
+    @media (max-width: 768px) {
+      .main-container { padding: 20px; }
+      .status-text { font-size: 1.4rem; }
+      .toggle-btn { padding: 10px 24px; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo">
+    <img src="{% static 'assets/logo.png' %}" onerror="this.style.display='none'">
+    <p><span class="medify">MediFy</span><span class="number">360</span></p>
+  </div>
+  <div class="staff-info">
+    <!-- 🔥 PROFILE IMAGE -->
+  <div style="position:relative;">
+
+  <img id="profileImage" src="" 
+       style="width:35px;height:35px;border-radius:50%;cursor:pointer;">
+
+  <!-- 🔥 DROPDOWN -->
+  <div id="profileMenu" style="
+      display:none;
+      position:absolute;
+      right:0;
+      top:45px;
+      background:#11212e;
+      border:1px solid #1e2a36;
+      border-radius:10px;
+      padding:10px;
+      width:160px;
+      z-index:100;
+  ">
+      <div onclick="viewProfile()" style="padding:8px;cursor:pointer;">👤 View Profile</div>
+      <div onclick="editProfile()" style="padding:8px;cursor:pointer;">✏️ Edit Profile</div>
+      <div onclick="changeImage()" style="padding:8px;cursor:pointer;">
+        📸 Change Image
+    </div>
+      <div onclick="handleLogout()" style="padding:8px;color:red;cursor:pointer;">🚪 Logout</div>
+  </div>
+
+</div>
+  <!-- 🔥 HIDDEN FILE INPUT -->
+  <input type="file" id="imageInput" style="display:none" accept="image/*">
+
+
+<span class="staff-name" id="staffName">
+  <i class="fas fa-user-circle"></i> Loading...
+</span>
+    <div class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</div>
+  </div>
+</div>
+
+<div class="main-container">
+   <!-- 🔥 ADD HERE -->
+  <div id="alertBox" style="
+      text-align:center;
+      margin-bottom:15px;
+      font-weight:600;
+      color:#f59e0b;
+  "></div>
+  <!-- Status Card with Toggle Button -->
+  <div class="status-card">
+    <div class="status-icon">
+      <i class="fas fa-user-shield"></i>
+    </div>
+    <div class="status-text" id="statusText">You are <span id="statusLabel">Offline</span></div>
+    <div>
+      <span class="status-badge" id="statusBadge">⚫ Offline</span>
+    </div>
+    <button class="toggle-btn" id="toggleStatusBtn"><i class="fas fa-power-off"></i> <span id="btnText">Go Online</span></button>
+    <div class="last-session" id="lastSessionInfo"></div>
+    <div id="liveTimer" style="margin-top:10px;font-weight:600;color:#00b8a9;"></div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="stats-row">
+    <div style="background:#11212e;padding:20px;border-radius:20px;margin-bottom:30px;">
+  <h3 style="color:white;margin-bottom:15px;">📊 Weekly Work Hours</h3>
+  <canvas id="hoursChart" height="100"></canvas>
+</div>
+    <div class="stat-mini">
+      <div class="value" id="totalSessions">0</div>
+      <div class="label">Total Sessions</div>
+    </div>
+    <div class="stat-mini">
+      <div class="value" id="totalHours">0.0</div>
+      <div class="label">Total Hours</div>
+    </div>
+    <div class="stat-mini">
+      <div class="value" id="avgHours">0.0</div>
+      <div class="label">Avg / Session (hrs)</div>
+    </div>
+    <div class="stat-mini">
+  <div class="value" id="todayHours">0.0</div>
+  <div class="label">Today Hours</div>
+</div>
+<div class="stat-mini">
+  <div class="value" id="performanceScore">0%</div>
+  <div class="label">Performance</div>
+</div>
+  </div>
+
+  <!-- History Logs -->
+  <div class="section-header">
+    <div style="margin-bottom:15px;">
+  <input type="date" id="filterDate">
+  <input type="month" id="filterMonth">
+  <button onclick="applyFilter()">Filter</button>
+</div>
+    <h2 class="section-title"><i class="fas fa-history"></i> Attendance Timeline</h2>
+    <button onclick="exportData()" class="btn-small">
+  <i class="fas fa-download"></i> Export
+</button>
+  </div>
+  <div class="data-table">
+    <table id="historyTable">
+      <thead>
+        <tr><th>Date</th><th>Start Time</th><th>End Time</th><th>Duration</th><th>Status</th></tr>
+      </thead>
+      <tbody id="historyBody">
+        <tr class="empty-row"><td colspan="5">No records yet. Go online to start tracking.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- 🔥 ADD THIS ABOVE FOOTER -->
+
+<div style="background:#11212e;padding:20px;border-radius:20px;margin-top:30px;">
+  <h3 style="color:white;">💬 Chat with Admin</h3>
+
+  <div id="chatBox" style="height:200px;overflow-y:auto;margin-bottom:10px;"></div>
+
+  <input type="text" id="chatInput" placeholder="Type message...">
+  <button onclick="sendMessage()">Send</button>
+</div>
+  <footer>
+    <i class="fas fa-clock"></i> Your online/offline times are recorded locally. Stay productive!
+  </footer>
+</div>
+
+<script>
+  let sessionStartTime = null;
+let timerInterval = null;
+  let currentSessionId = null;
+
+function applyFilter() {
+
+    let date = document.getElementById("filterDate").value;
+    let month = document.getElementById("filterMonth").value;
+
+    let url = "/staff/history/?";
+
+    if (date) {
+        url += "date=" + date;
+    } else if (month) {
+        url += "month=" + month;
+    }
+
+    fetch(url)
+    .then(res => res.json())
+    .then(data => {
+
+        let records = data.data;
+        const tbody = document.getElementById("historyBody");
+
+        let html = "";
+
+        records.forEach(day => {
+            html += `
+                <tr>
+                    <td>${day.date}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>${day.total_hours} hrs</td>
+                    <td>Completed</td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = html;
+    });
+}
+function startSession() {
+
+    fetch("/staff/start/", {
+        method: "POST"
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        // 🔥 SET SESSION ID
+        currentSessionId = data.id;
+
+        // 🔥 SET START TIME (important for timer)
+        sessionStartTime = new Date().toISOString();
+
+        // 🔥 UPDATE UI
+        updateUIForOnline();
+
+        // 🔥 START LIVE TIMER
+        startLiveTimer();
+    });
+}
+function changeImage() {
+    document.getElementById("imageInput").click();
+}
+function loadGraph() {
+
+    fetch("/staff/weekly-hours/")
+    .then(res => res.json())
+    .then(data => {
+
+        const ctx = document.getElementById("hoursChart").getContext("2d");
+
+        new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: "Hours",
+                    data: data.data,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    });
+}
+  function endSession() {
+
+    fetch("/staff/end/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            sessionId: currentSessionId
+        })
+    })
+    .then(res => res.json())
+    .then(() => {
+
+        currentSessionId = null;
+
+        updateUIForOffline();
+        loadHistory();
+        loadTodayHours();
+    });
+}
+document.getElementById("profileImage").addEventListener("click", function(e) {
+
+    let menu = document.getElementById("profileMenu");
+
+    menu.style.display = (menu.style.display === "block") ? "none" : "block";
+
+    e.stopPropagation();
+});
+
+// close when clicking outside
+document.addEventListener("click", function() {
+    document.getElementById("profileMenu").style.display = "none";
+});
+function loadTodayHours() {
+
+    fetch("/staff/today-hours/")
+    .then(res => res.json())
+    .then(data => {
+
+        document.getElementById("todayHours").innerText =
+            data.today_hours.toFixed(2);
+    });
+}
+
+function exportData() {
+    window.open("/staff/export/", "_blank");
+}
+function viewProfile() {
+
+    fetch("/get-profile/")
+    .then(res => res.json())
+    .then(data => {
+
+        alert(
+`👤 Name: ${data.name}
+📧 Email: ${data.email}
+
+🎂 Age: ${data.age || "Not set"}
+📏 Height: ${data.height || "Not set"} cm
+⚖ Weight: ${data.weight || "Not set"} kg
+🧠 BMI: ${data.bmi || "Not set"}`
+        );
+    });
+}
+
+function editProfile() {
+
+    fetch("/get-profile/")
+    .then(res => res.json())
+    .then(data => {
+
+        let age = prompt("Enter Age:", data.age || "");
+        let height = prompt("Enter Height (cm):", data.height || "");
+        let weight = prompt("Enter Weight (kg):", data.weight || "");
+
+        fetch("/update-profile/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                age: age,
+                height: height,
+                weight: weight
+            })
+        })
+        .then(res => res.json())
+        .then(resp => {
+
+            if (resp.status === "success") {
+                alert(`✅ Updated Successfully\nBMI: ${resp.bmi}`);
+            } else {
+                alert("Error updating profile");
+            }
+        });
+    });
+}
+  function updateUIForOnline(startDisplay = null) {
+
+    document.getElementById('statusLabel').innerText = 'Online';
+    document.getElementById('statusBadge').innerHTML = '🟢 Online';
+    document.getElementById('statusBadge').className = 'status-badge badge-online';
+    document.getElementById('btnText').innerHTML = 'Go Offline';
+    document.getElementById('toggleStatusBtn').classList.remove('offline');
+
+    // 🔥 SMART MESSAGE
+    if (startDisplay) {
+        document.getElementById('statusText').innerHTML =
+            `You are <span id="statusLabel">Online</span> since ${startDisplay}`;
+    } else {
+        document.getElementById('statusText').innerHTML =
+            `You are <span id="statusLabel">Online</span>`;
+    }
+
+    document.getElementById('lastSessionInfo').innerHTML =
+        `<i class="fas fa-play-circle"></i> You are Online`;
+}
+
+  function updateUIForOffline() {
+    document.getElementById('statusLabel').innerText = 'Offline';
+    document.getElementById('statusBadge').innerHTML = '⚫ Offline';
+    document.getElementById('statusBadge').className = 'status-badge badge-offline';
+    document.getElementById('btnText').innerHTML = 'Go Online';
+    document.getElementById("alertBox").innerText = "";
+    document.getElementById('toggleStatusBtn').classList.add('offline');
+    if (!currentSessionId) {
+      document.getElementById('lastSessionInfo').innerHTML = `<i class="fas fa-history"></i> You are offline. Click "Go Online" to start tracking.`;
+    }
+    if (timerInterval) {
+    clearInterval(timerInterval);
+}
+
+document.getElementById("liveTimer").innerText = "";
+  }
+
+// 🔥 UPLOAD IMAGE
+document.getElementById("imageInput").addEventListener("change", function() {
+
+    let file = this.files[0];
+
+    let formData = new FormData();
+    formData.append("image", file);
+
+    fetch("/upload-avatar/", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.status === "success") {
+            document.getElementById("profileImage").src = data.image_url;
+        } else {
+            alert("Upload failed");
+        }
+    });
+});
+ 
+function loadProfile() {
+    fetch("/get-profile/")
+    .then(res => res.json())
+    .then(data => {
+
+        // ✅ name
+        document.getElementById("staffName").innerHTML =
+            `<i class="fas fa-user-circle"></i> ${data.name} (Staff)`;
+
+        // ✅ image
+        if (data.image) {
+            document.getElementById("profileImage").src = data.image;
+        } else {
+            document.getElementById("profileImage").src =
+                "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        }
+    });
+}
+
+ function toggleStatus() {
+    if (currentSessionId) {
+        endSession();
+    } else {
+        startSession();
+    }
+}
+
+function handleLogout() {
+    fetch("/logout/", {
+        method: "POST"
+    })
+    .then(res => res.json())
+    .then(() => {
+        window.location.href = "/";   // go to login page
+    });
+}
+
+function checkAlerts() {
+
+    if (!sessionStartTime) return;
+
+    let start = new Date(sessionStartTime);
+    let now = new Date();
+
+    let diffHours = (now - start) / (1000 * 60 * 60);
+
+    let alertBox = document.getElementById("alertBox");
+
+    if (diffHours >= 8) {
+        alertBox.innerText = "⚠️ You have been online for 8+ hours. Take a break!";
+    }
+    else if (diffHours >= 4) {
+        alertBox.innerText = "💡 You have been working for 4+ hours.";
+    }
+    else {
+        alertBox.innerText = "";
+    }
+}
+function checkCurrentSession() {
+    fetch("/staff/current/")
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.active) {
+            currentSessionId = data.id;
+sessionStartTime = data.start_time;
+
+sessionStartTime = data.start_time;
+updateUIForOnline(data.start_display);
+
+startLiveTimer();   // 🔥 ADD THIS
+        } else {
+            currentSessionId = null;
+            updateUIForOffline();
+        }
+    });
+}
+function startLiveTimer() {
+
+    if (!sessionStartTime) return;
+
+    // clear previous interval
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+
+    timerInterval = setInterval(() => {
+      checkAlerts();   // 🔥 ADD THIS
+        let start = new Date(sessionStartTime);
+        let now = new Date();
+
+        let diff = Math.floor((now - start) / 1000); // seconds
+
+        let hrs = Math.floor(diff / 3600);
+        let mins = Math.floor((diff % 3600) / 60);
+        let secs = diff % 60;
+
+        document.getElementById("liveTimer").innerText =
+            `⏱️ Online for: ${hrs}h ${mins}m ${secs}s`;
+
+    }, 1000);
+}
+function loadLastSession() {
+
+    fetch("/staff/last-session/")
+    .then(res => res.json())
+    .then(data => {
+
+        let box = document.getElementById("lastSessionInfo");
+
+        if (!data.exists) {
+            box.innerHTML = "No previous session";
+            return;
+        }
+
+        box.innerHTML =
+            `🕒 Last session: ${data.duration} hrs (${data.date} ${data.end_time})`;
+    });
+}
+function loadHistory() {
+
+    fetch("/staff/history/")
+    .then(res => res.json())
+    .then(data => {
+
+        let records = data.data;
+        const tbody = document.getElementById("historyBody");
+
+        if (!records.length) {
+            tbody.innerHTML = `<tr><td colspan="5">No records</td></tr>`;
+            
+            document.getElementById("totalSessions").innerText = 0;
+            document.getElementById("totalHours").innerText = "0.0";
+            document.getElementById("avgHours").innerText = "0.0";
+            return;
+        }
+
+        let html = "";
+
+let totalSessions = records.length;   // number of days
+let totalHours = 0;
+
+records.forEach(day => {
+
+    if (day.is_today) {
+
+        html += `
+            <tr style="background:#0f2027;color:#00b8a9;">
+                <td>${day.date}</td>
+                <td colspan="3">Today's Sessions</td>
+                <td>-</td>
+            </tr>
+        `;
+
+        day.sessions.forEach(s => {
+            html += `
+                <tr>
+                    <td></td>
+                    <td>${s.start.split(" ")[1]}</td>
+                    <td>${s.end ? s.end.split(" ")[1] : "-"}</td>
+                    <td>${s.duration} hrs</td>
+                    <td>Session</td>
+                </tr>
+            `;
+        });
+
+    } else {
+
+        html += `
+            <tr>
+                <td>${day.date}</td>
+                <td>-</td>
+                <td>-</td>
+                <td>${day.total_hours} hrs</td>
+                <td>Completed</td>
+            </tr>
+        `;
+    }
+
+});
+let avgHours = totalSessions ? (totalHours / totalSessions) : 0;
+
+// 🔥 UPDATE UI
+document.getElementById("totalSessions").innerText = totalSessions;
+document.getElementById("totalHours").innerText = totalHours.toFixed(2);
+document.getElementById("avgHours").innerText = avgHours.toFixed(2);
+
+tbody.innerHTML = html;
+
+        
+    });
+}
+  // Event listeners
+  document.getElementById('toggleStatusBtn').addEventListener('click', toggleStatus);
+
+  document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+
+function sendMessage() {
+    let msg = document.getElementById("chatInput").value;
+
+    fetch("/staff/send-message/", {
+        method: "POST",
+        body: JSON.stringify({message: msg})
+    }).then(() => {
+        document.getElementById("chatInput").value = "";
+        loadMessages();
+    });
+}
+
+function loadMessages() {
+    fetch("/staff/get-messages/")
+    .then(res => res.json())
+    .then(data => {
+
+        let html = "";
+        data.messages.forEach(m => {
+            html += `<div><b>${m.user}</b>: ${m.msg} <small>${m.time}</small></div>`;
+        });
+
+        document.getElementById("chatBox").innerHTML = html;
+    });
+}
+function loadMonthlyGraph() {
+
+    fetch("/staff/monthly-analytics/")
+    .then(res => res.json())
+    .then(data => {
+
+        const ctx = document.getElementById("hoursChart").getContext("2d");
+
+        new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: "Monthly Hours",
+                    data: data.data,
+                    borderWidth: 2
+                }]
+            }
+        });
+    });
+}
+  function loadPerformance() {
+
+    fetch("/staff/performance/")
+    .then(res => res.json())
+    .then(data => {
+
+        document.getElementById("performanceScore").innerText =
+            data.score + "%";
+    });
+}
+  // 🔥 LOAD HISTORY ON PAGE LOAD
+window.onload = function() {
+    loadHistory();
+    checkCurrentSession();
+    loadProfile();
+    loadTodayHours();
+   
+     loadLastSession();
+     loadMessages();
+setInterval(loadMessages, 3000);
+loadMonthlyGraph();
+loadPerformance();
+};
+</script>
+</body>
+</html>

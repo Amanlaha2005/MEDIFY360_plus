@@ -708,9 +708,7 @@
 <div class="nav-item" data-section="driver">
     <i class="fas fa-car"></i><span>Driver</span>
 </div>
-<div class="nav-item" data-section="requests">
-    <i class="fas fa-bell"></i><span>Requests</span>
-</div>
+
             <div class="nav-item" data-section="billing">
               <i class="fas fa-file-invoice-dollar"></i><span>OPD Billing</span>
             </div>
@@ -722,7 +720,9 @@
           </div>
         </div>
       </div>
-      <div class="main-content" id="mainContent"></div>
+      <div class="main-content" id="mainContent">
+        
+      </div>
     </div>
 
     <!-- Modals (unchanged) -->
@@ -1088,21 +1088,33 @@
 
             let ambulanceDrivers =[];
 
-           function loadFeedbacks() {
+          
+
+        // 🔥 re-render dashboard AFTER data comes
+        function loadFeedbacks() {
     fetch("/get-feedbacks/")
     .then(res => res.json())
     .then(data => {
 
         feedbacks = data.feedbacks;
 
-        // 🔥 re-render dashboard AFTER data comes
-        document.getElementById("mainContent").innerHTML = renderDashboard();
-    });
+        const tableBody = document.querySelector("tbody");
+
+        if (!tableBody) return;
+
+        tableBody.innerHTML = feedbacks.length > 0
+            ? feedbacks.slice(0,5).map(fb => `
+                <tr>
+                    <td>${fb.patient}</td>
+                    <td>-</td>
+                    <td>${"★".repeat(fb.rating)}</td>
+                    <td>${fb.comment || "No comment"}</td>
+                </tr>
+            `).join("")
+            : `<tr><td colspan="4">No feedback</td></tr>`;
+    })
+    .catch(err => console.log("Feedback error:", err));
 }
-
-           
-
-
             function updateCitizenRatings() {
               citizens.forEach((cit) => {
                 let userFeedbacks = feedbacks.filter((fb) => fb.patient === cit.name);
@@ -1225,33 +1237,219 @@ function renderStaff() {
         <div id="staffList"></div>
     `;
 }
-
-function loadStaff() {
+function loadStaffSection() {
 
     fetch("/get-staff/")
     .then(res => res.json())
     .then(data => {
 
-        let active = data.staff.filter(s => s.status === "active").length;
-        let absent = data.staff.filter(s => s.status === "absent").length;
+        let all = data.staff;
 
-        document.getElementById("staffStats").innerHTML =
-            `Active: ${active} | Absent: ${absent}`;
+        let approved = all.filter(s => s.approval_status === "approved");
+        let pending = all.filter(s => s.approval_status === "pending");
 
-        let html = "";
+        let html = `
+            <div class="section-header">
+                <h2 class="section-title">👨‍⚕️ Staff Management</h2>
+            </div>
 
-        data.staff.forEach(s => {
+            <h3>✅ Active Staff</h3>
+
+            <div class="data-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Today Hours</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        // ✅ APPROVED STAFF
+        approved.forEach(s => {
             html += `
-                <div onclick="viewStaff(${s.id})">
-                    ${s.name} (${s.status})
-                </div>
+                <tr>
+                    <td>
+                        <img src="${s.image || '/static/assets/default.png'}"
+                             style="width:40px;height:40px;border-radius:50%;cursor:pointer"
+                             onclick="openStaffMenu(${s.id}, event)">
+                        ${s.name}
+                    </td>
+
+                   <td>${formatTime(s.today_hours)}</td>
+
+<td>
+    ${s.status === "Online" 
+        ? `<span style="color:#10b981;">🟢 Online</span>` 
+        : `<span style="color:#ef4444;">🔴 Offline</span>`}
+</td>
+
+<td>
+    <button onclick="viewStaffHistory(${s.id})">
+        View 7 Days
+    </button>
+</td>
+                </tr>
             `;
         });
 
-        document.getElementById("staffList").innerHTML = html;
+        html += `</tbody></table></div>`;
+
+        // 🔥 PENDING SECTION (BOTTOM)
+        if (pending.length > 0) {
+
+            html += `
+                <h3 style="margin-top:30px;">⏳ Pending Requests</h3>
+
+                <div class="data-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            pending.forEach(s => {
+                html += `
+                    <tr>
+                        <td>${s.name}</td>
+                        <td>
+                            <button onclick="approveStaff(${s.id})">Approve</button>
+                            <button onclick="rejectStaff(${s.id})">Reject</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table></div>`;
+        }
+
+        document.getElementById("mainContent").innerHTML = html;
     });
 }
 
+function formatTime(hours) {
+    let totalSec = Math.floor(hours * 3600);
+
+    let h = Math.floor(totalSec / 3600);
+    let m = Math.floor((totalSec % 3600) / 60);
+    let s = totalSec % 60;
+
+    return `${h}h ${m}m ${s}s`;
+}
+
+
+
+
+
+
+
+
+
+
+
+function openStaffMenu(id, event) {
+
+    // 🔥 remove old menu
+    let old = document.getElementById("staffMenu");
+    if (old) old.remove();
+
+    let menu = document.createElement("div");
+    menu.id = "staffMenu";
+
+    menu.style.position = "absolute";
+    menu.style.top = event.pageY + "px";
+    menu.style.left = event.pageX + "px";
+    menu.style.background = "#11212e";
+    menu.style.padding = "10px";
+    menu.style.borderRadius = "10px";
+    menu.style.zIndex = "1000";
+
+    menu.innerHTML = `
+        <div onclick="viewStaff(${id})">👁 View</div>
+        <div onclick="deleteStaff(${id})">🗑 Delete</div>
+    `;
+
+    document.body.appendChild(menu);
+}
+function deleteStaff(id) {
+    fetch(`/delete-staff/${id}/`, { method: "POST" })
+    .then(() => loadStaffSection());
+}
+
+function viewStaffHistory(id) {
+
+    fetch(`/get-staff-history/${id}/`)
+    .then(res => res.json())
+    .then(data => {
+
+        let rows = data.history.map(h => `
+
+            <tr>
+                <td>${h.date}</td>
+<td>${h.hours} hrs</td>
+            </tr>
+
+        `).join("");
+
+        document.getElementById("mainContent").innerHTML = `
+
+            <h2>📊 Last 7 Days Performance</h2>
+
+            <div style="margin-bottom:15px;">
+                <input type="date" id="filterDate">
+                <input type="month" id="filterMonth">
+                <button onclick="filterHistory(${id})">Search</button>
+            </div>
+
+            <div class="data-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Total Hours</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="historyBody">
+                        ${rows}
+                    </tbody>
+                </table>
+            </div>
+
+            <button onclick="loadStaffSection()">⬅ Back</button>
+        `;
+    });
+}
+function filterHistory(id) {
+
+    let date = document.getElementById("filterDate").value;
+    let month = document.getElementById("filterMonth").value;
+
+    let url = `/get-staff-history/${id}/`;
+
+if (date) url += `?date=${date}`;
+else if (month) url += `?month=${month}`;
+fetch(url)
+    .then(res => res.json())
+    .then(data => {
+
+        let rows = data.history.map(h => `
+            <tr>
+                <td>${h.date}</td>
+        <td>${h.hours} hrs</td>
+            </tr>
+        `).join("");
+
+        document.getElementById("historyBody").innerHTML = rows;
+    });
+}
 function viewStaff(id) {
 
     fetch("/get-staff/")
@@ -1935,10 +2133,16 @@ function loadDashboard() {
     <div id="todayVisitorsContainer"></div>
     `;
 }
-
-
-
-
+window.onerror = function(msg) {
+    console.log("ERROR:", msg);
+}
+function safeRedirect(id) {
+    if (!id) {
+        window.location.href = "/admin-dashboard/";
+    } else {
+        window.location.href = "/admin-dashboard/" + id;
+    }
+}
 
 function renderBilling() {
 
@@ -2048,16 +2252,19 @@ function loadFilteredBills() {
               } else document.getElementById("age").value = "";
             }
 
-document.getElementById("timingType")
-.addEventListener("change", function () {
+document.addEventListener("change", function (e) {
 
-    let customFields = document.getElementById("customFields");
+    if (e.target && e.target.id === "timingType") {
 
-    if (this.value === "CUSTOM") {
-        customFields.style.display = "block";
-    } else {
-        customFields.style.display = "none";
+        let customFields = document.getElementById("customFields");
+
+        if (e.target.value === "CUSTOM") {
+            customFields.style.display = "block";
+        } else {
+            customFields.style.display = "none";
+        }
     }
+
 });
            function initBillingFormEvents() {
 
@@ -2185,13 +2392,13 @@ function loadRequests() {
 function approveStaff(id) {
     fetch(`/approve-staff/${id}/`, { method: "POST" })
     .then(res => res.json())
-    .then(() => loadRequests());
+    .then(() => loadStaffSection());   // ✅ correct
 }
 
 function rejectStaff(id) {
     fetch(`/reject-staff/${id}/`, { method: "POST" })
     .then(res => res.json())
-    .then(() => loadRequests());
+    .then(() => loadStaffSection());   // ✅ correct
 }
 
 function approveDriver(id) {
@@ -2210,12 +2417,16 @@ function renderSection(section) {
     let content = "";
 
     if (section === "dashboard") {
-    document.getElementById("mainContent").innerHTML = `
-        <h2>Loading Dashboard...</h2>
-    `;
-    loadDashboard();   // ✅ ONLY LOAD
+
+    // 🔥 FIRST render HTML
+    document.getElementById("mainContent").innerHTML = renderDashboard();
+
+    // 🔥 THEN load data
+    loadDashboard();
+
     return;
 }
+
     else if (section === "citizens") {
         loadCitizens();
         return;
@@ -2230,7 +2441,9 @@ function renderSection(section) {
         content = renderAmbulanceDrivers();
     }
     else if (section === "staff") {
-        content = renderStaff();
+        document.getElementById("mainContent").innerHTML = renderStaff();
+    
+     loadStaffSection();
     }
     else if (section === "driver") {
         content = renderDriver();
@@ -2751,6 +2964,7 @@ function editBill(id) {
               renderCurrentView();
             };
 
+            
         function renderCurrentView() {
 
     let active =

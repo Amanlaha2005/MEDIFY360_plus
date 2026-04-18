@@ -1817,10 +1817,7 @@
             <div class="pw-strength-bar" style="margin-top: 4px">
               <div class="pw-strength-bar-fill" id="strengthFill"></div>
             </div>
-            <div
-              class="pw-strength-label"
-              style="margin-top: 2px; font-size: 0.65rem"
-            >
+            <div id="strengthLabel" class="pw-strength-label" style="margin-top: 2px; font-size: 0.65rem">
               Password strength
             </div>
           </div>
@@ -2143,7 +2140,7 @@
             "Content-Type": "application/x-www-form-urlencoded",
             "X-CSRFToken": getCookie("csrftoken"),
           },
-          body: `username=${username}&email=${email}&password=${password}`,
+          body: `username=${username}&email=${email}&password=${password}&role=${currentRole}`,
         })
           .then((res) => res.json())
           .then((data) => {

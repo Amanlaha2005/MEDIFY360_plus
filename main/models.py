@@ -163,3 +163,17 @@ class Feedback(models.Model):
     rating = models.IntegerField()
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    
+class StaffAttendance(models.Model):
+    staff = models.ForeignKey(User, on_delete=models.CASCADE)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True, blank=True)
+    duration = models.FloatField(default=0)  # in hours
+
+    def __str__(self):
+        return f"{self.staff.username} - {self.start_time}"
+    
+class StaffMessage(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
