@@ -28,7 +28,8 @@ class Profile(models.Model):
     height = models.FloatField(null=True, blank=True)
     weight = models.FloatField(null=True, blank=True)
     bmi = models.FloatField(null=True, blank=True)
-
+    family_phone = models.CharField(max_length=15, blank=True, null=True)
+    
     def __str__(self):
         return f"{self.user.username} - {self.role}"
     
@@ -177,3 +178,18 @@ class StaffMessage(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    
+class FitnessRecord(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    bmi = models.FloatField()
+
+    diabetes_risk = models.FloatField()
+    heart_risk = models.FloatField()
+    bp_risk = models.FloatField()
+    chol_risk = models.FloatField()
+
+    # ✅ ADD THESE
+    bp_value = models.CharField(max_length=20, null=True, blank=True)
+    chol_value = models.IntegerField(null=True, blank=True)
+
+    date = models.DateTimeField(auto_now_add=True)

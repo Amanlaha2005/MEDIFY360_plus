@@ -91,7 +91,7 @@ EMAIL_HOST_PASSWORD = 'eoog rffu wvqc egcv'
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-GEMINI_API_KEY ="AIzaSyD7nFZ9E5s4Cm-VKzizR81hBCl-rkPukXg"
+GEMINI_API_KEY ="AIzaSyDQ0wMv4IVczDLvAW11_ia1eIwPcRvDUr8"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

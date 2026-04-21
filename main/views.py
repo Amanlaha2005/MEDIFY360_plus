@@ -9,8 +9,11 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 import random
 from django.utils import timezone
+from .ml_model import predict_diseases
 from datetime import datetime
 from google import genai
+from .models import FitnessRecord
+from .ml_fitness import calculate_risk
 from .rag import search_knowledge
 from .models import OTP, Profile, ChatMessage , Doctor , DoctorTiming , Appointment
 
@@ -18,7 +21,49 @@ from .models import OTP, Profile, ChatMessage , Doctor , DoctorTiming , Appointm
 # ================= INIT GEMINI =================
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
+@csrf_exempt
+def save_fitness(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        profile = request.user.profile
+        bmi = profile.bmi
+        age = profile.age
+        bp = data.get("bp")
+        chol = data.get("chol")
 
+        risk = calculate_risk(age, bmi)
+
+        FitnessRecord.objects.create(
+            user=request.user,
+            bmi=bmi,
+            diabetes_risk=risk["diabetes"],
+            heart_risk=risk["heart"],
+            bp_risk=risk["bp"],
+            chol_risk=risk["chol"],
+
+            # ✅ SAVE REAL VALUES
+            bp_value=bp,
+            chol_value=chol
+        )
+
+        return JsonResponse({"status": "saved"})
+    
+def get_fitness(request):
+    records = FitnessRecord.objects.filter(user=request.user).order_by("date")
+
+    data = []
+
+    for r in records:
+        data.append({
+            "bmi": r.bmi,
+            "date": str(r.date),
+            "diabetes": r.diabetes_risk,
+            "heart": r.heart_risk,
+            "bp": r.bp_value,
+            "chol": r.chol_value
+        })
+
+    return JsonResponse({"records": data})
 # ================= PERSONALITY =================
 SYSTEM_PROMPT = """
 You are a calm, emotionally intelligent, and caring big brother.
@@ -163,7 +208,7 @@ def login_user(request):
     if request.method == "POST":
         username_or_email = request.POST.get("username")
         password = request.POST.get("password")
-        selected_role = request.POST.get("role")  # 🔥 frontend role
+        selected_role = request.POST.get("role")
 
         # 🔥 HANDLE EMAIL LOGIN
         if "@" in username_or_email:
@@ -181,24 +226,32 @@ def login_user(request):
 
         if user is not None:
 
-            # 🔥 GET ROLE FROM DATABASE (IMPORTANT)
+            # 🔥 SUPERUSER DIRECT LOGIN (IMPORTANT FIX)
+            if user.is_superuser:
+                login(request, user)
+                return JsonResponse({
+                    "status": "success",
+                    "redirect": "/admin-dashboard/"
+                })
+
+            # 🔥 GET PROFILE FOR NORMAL USERS
             try:
                 profile = Profile.objects.get(user=user)
-                db_role = profile.role   # ADMIN / STAFF / CITIZEN / DRIVER
+                db_role = profile.role
             except Profile.DoesNotExist:
                 return JsonResponse({
                     "status": "error",
                     "message": "Profile not found"
                 })
 
-            # ❌ ROLE MISMATCH CHECK
+            # ❌ ROLE MISMATCH
             if selected_role.upper() != db_role:
                 return JsonResponse({
                     "status": "error",
                     "message": "Invalid credentials for selected role ❌"
                 })
 
-            # 🔥 STAFF APPROVAL CHECK
+            # 🔥 STAFF APPROVAL
             try:
                 staff = Staff.objects.get(user=user)
 
@@ -217,7 +270,7 @@ def login_user(request):
             except Staff.DoesNotExist:
                 pass
 
-            # 🔥 DRIVER APPROVAL CHECK
+            # 🔥 DRIVER APPROVAL
             try:
                 driver = Driver.objects.get(user=user)
 
@@ -236,10 +289,10 @@ def login_user(request):
             except Driver.DoesNotExist:
                 pass
 
-            # ✅ LOGIN AFTER ALL CHECKS
+            # ✅ LOGIN
             login(request, user)
 
-            # 🔥 REDIRECT BASED ON DB ROLE (NOT FRONTEND)
+            # 🔥 REDIRECT BASED ON ROLE
             if db_role == "ADMIN":
                 return JsonResponse({
                     "status": "success",
@@ -276,12 +329,6 @@ def login_user(request):
         })
 
     return JsonResponse({"status": "error"})
-
-
-
-
-
-
 
 
 
@@ -1051,6 +1098,10 @@ from django.views.decorators.csrf import csrf_exempt
 def get_profile(request):
     profile = request.user.profile
 
+    risk = None
+    if profile.age and profile.bmi:
+        risk = predict_diseases(profile.age, profile.bmi)
+
     return JsonResponse({
         "name": request.user.username,
         "email": request.user.email,
@@ -1058,7 +1109,9 @@ def get_profile(request):
         "height": profile.height,
         "weight": profile.weight,
         "bmi": profile.bmi,
-        "image": profile.image.url if profile.image else ""
+        "image": profile.image.url if profile.image else "",
+        "family_phone": profile.family_phone,
+        "risk": risk   # ✅ NEW
     })
     
 @csrf_exempt
@@ -1071,12 +1124,16 @@ def update_profile(request):
         age = data.get("age")
         height = data.get("height")
         weight = data.get("weight")
+        family_phone = data.get("family_phone")
 
-        # 🔥 VALIDATION
+        # 🔥 SAVE PHONE FIRST
+        profile.family_phone = family_phone
+
         if not height or not weight:
+            profile.save()   # ✅ still save phone
             return JsonResponse({"error": "height_weight_required"})
 
-        # 🔥 BMI CALCULATION
+        # BMI
         height_m = float(height) / 100
         bmi = float(weight) / (height_m ** 2)
 
@@ -1085,10 +1142,9 @@ def update_profile(request):
         profile.weight = weight
         profile.bmi = round(bmi, 2)
 
-        profile.save()
+        profile.save()   # ✅ FINAL SAVE
 
-        return JsonResponse({"status": "success", "bmi": profile.bmi})
-    
+        return JsonResponse({"status": "success"})
 @csrf_exempt
 def upload_avatar(request):
     if request.method == "POST":
@@ -1529,3 +1585,140 @@ def performance_score(request):
     return JsonResponse({
         "score": round(percentage, 2)
     })
+
+@csrf_exempt
+def send_location(request):
+    data = json.loads(request.body)
+    lat = data.get("lat")
+    lon = data.get("lon")
+
+    print(f"Location: {lat}, {lon}")
+
+    return JsonResponse({"status": "received"})
+
+import requests
+
+from django.views.decorators.csrf import csrf_exempt
+import json
+import requests
+
+import requests
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def emergency_alert(request):
+    if request.method == "POST":
+
+        data = json.loads(request.body)
+        lat = data.get("lat")
+        lon = data.get("lon")
+
+        profile = request.user.profile
+        number = profile.family_phone
+
+        # ❗ check if number exists
+        if not number:
+            return JsonResponse({"error": "No phone number saved"})
+
+        # ✅ FIX NUMBER FORMAT (VERY IMPORTANT)
+        number = "91" + number
+
+        # ✅ SIMPLE MESSAGE (for testing)
+        message = "Emergency Alert! Please help."
+
+        url = "https://www.fast2sms.com/dev/bulkV2"
+
+        payload = {
+            "sender_id": "FSTSMS",
+            "message": message,
+            "language": "english",
+            "route": "q",
+            "numbers": number
+        }
+
+        headers = {
+            "authorization": "8LPm6kJM77307EIU6ggEGz6nTWn5w6vzBP7Cyqm499iTRDQ4yOioxFpKt8mT",
+            "Content-Type": "application/json"
+        }
+
+        response = requests.post(url, json=payload, headers=headers)
+
+        # ✅ DEBUG OUTPUT (VERY IMPORTANT)
+        print("SMS RESPONSE:", response.text)
+
+        return JsonResponse({"status": "sent"})
+    
+@csrf_exempt
+def get_ai_diet(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            age = data.get("age")
+            bmi = data.get("bmi")
+            bp = data.get("bp")
+            chol = data.get("chol")
+
+            prompt = f"""
+                Give ONLY diet in this format:
+
+                Breakfast:
+                Lunch:
+                Dinner:
+
+                Age: {age}
+                BMI: {bmi}
+                BP: {bp}
+                Cholesterol: {chol}
+                """
+
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
+
+            return JsonResponse({
+                "diet": response.text
+            })
+
+        except:
+            # 🔥 NO ERROR SHOWN
+            return JsonResponse({
+                "diet": "Breakfast: Oats + Fruits | Lunch: Dal + Rice + Sabzi | Dinner: Roti + Vegetables"
+            })   
+        
+        
+        
+        
+        
+@csrf_exempt
+def get_ai_exercise(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            bmi = data.get("bmi")
+
+            prompt = f"""
+Give ONLY exercise plan:
+
+Morning:
+Evening:
+
+BMI: {bmi}
+"""
+
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
+
+            return JsonResponse({
+                "exercise": response.text
+            })
+
+        except:
+            return JsonResponse({
+                "exercise": "Morning: 30 min walking | Evening: Light yoga + stretching"
+            })

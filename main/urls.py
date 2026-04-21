@@ -60,4 +60,10 @@ urlpatterns = [
     path("staff/get-messages/", views.get_messages),
     path("staff/monthly-analytics/", views.monthly_analytics),
     path("staff/performance/", views.performance_score),
+    path('emergency-alert/', views.emergency_alert),
+    path('send-location/', views.send_location),
+    path("save-fitness/", views.save_fitness),
+    path("get-fitness/", views.get_fitness),
+    path("ai-diet/", views.get_ai_diet),
+    path("ai-exercise/", views.get_ai_exercise),
 ]
