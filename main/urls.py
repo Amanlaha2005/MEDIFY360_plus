@@ -66,4 +66,20 @@ urlpatterns = [
     path("get-fitness/", views.get_fitness),
     path("ai-diet/", views.get_ai_diet),
     path("ai-exercise/", views.get_ai_exercise),
+    # CATEGORY
+    path("add-category/", views.add_category),
+    path("get-categories/", views.get_categories),
+    path("delete-category/<int:id>/", views.delete_category),
+    path("store/", views.store_page),
+    # MEDICINE
+    path("add-medicine/", views.add_medicine),
+    path("get-medicines/", views.get_medicines),
+    path("delete-medicine/<int:id>/", views.delete_medicine),
+    path("add-to-cart/", views.add_to_cart),
+    path("get-cart/", views.get_cart),
+    path("update-cart/", views.update_cart),
+    path("save-address/", views.save_address),
+    path("place-order/", views.place_order),
+    path("get-orders/", views.get_orders),
+    path("get-address/", views.get_address),
 ]

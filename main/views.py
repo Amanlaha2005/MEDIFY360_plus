@@ -1722,3 +1722,223 @@ BMI: {bmi}
             return JsonResponse({
                 "exercise": "Morning: 30 min walking | Evening: Light yoga + stretching"
             })
+from .models import Medicine,Category
+@csrf_exempt
+def add_category(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        name = data.get("name")
+
+        Category.objects.create(name=name)
+
+        return JsonResponse({"status": "success"})
+def get_categories(request):
+    cats = Category.objects.all()
+
+    data = [{"id": c.id, "name": c.name} for c in cats]
+
+    return JsonResponse({"categories": data})
+
+@csrf_exempt
+def delete_category(request, id):
+    Category.objects.filter(id=id).delete()
+    return JsonResponse({"status": "success"})
+
+@csrf_exempt
+def add_medicine(request):
+    if request.method == "POST":
+
+        med_id = request.POST.get("id")
+        name = request.POST.get("name")
+        quantity = request.POST.get("quantity")
+        unit = request.POST.get("unit")
+        mrp = request.POST.get("mrp")
+        category_id = request.POST.get("category")
+        image = request.FILES.get("image")
+
+        category = Category.objects.get(id=category_id)
+
+        if med_id:
+            med = Medicine.objects.get(id=med_id)
+            med.name = name
+            med.quantity = quantity
+            med.category = category
+            med.unit = unit
+
+            med.mrp = mrp 
+
+            if image:
+                med.image = image
+
+            med.save()
+        else:
+            Medicine.objects.create(
+                name=name,
+                quantity=quantity,
+                unit=unit,
+                mrp=mrp, 
+                category=category,
+                image=image
+            )
+
+        return JsonResponse({"status": "success"})
+    
+def get_medicines(request):
+    meds = Medicine.objects.select_related("category").all()
+
+    data = []
+    for m in meds:
+        data.append({
+            "id": m.id,
+            "name": m.name,
+            "quantity": m.quantity,
+            "unit": m.unit,
+            "mrp": m.mrp,
+            "category": m.category.name,
+            "category_id": m.category.id,
+            "image": m.image.url if m.image else ""
+        })
+
+    return JsonResponse({"medicines": data})
+@login_required
+def store_page(request):
+    return render(request, "main/store.html")
+@csrf_exempt
+def delete_medicine(request, id):
+    Medicine.objects.filter(id=id).delete()
+    return JsonResponse({"status": "success"})
+from .models import Address , Cart,Order,OrderItem
+@csrf_exempt
+def add_to_cart(request):
+    data = json.loads(request.body)
+
+    med_id = data.get("id")
+    qty = data.get("qty")
+
+    med = Medicine.objects.get(id=med_id)
+
+    cart, created = Cart.objects.get_or_create(
+        user=request.user,
+        medicine=med
+    )
+
+    if not created:
+        cart.quantity += qty
+    else:
+        cart.quantity = qty
+
+    cart.save()
+
+    return JsonResponse({"status": "added"})
+def get_address(request):
+    addresses = Address.objects.filter(user=request.user)
+
+    data = []
+    for a in addresses:
+        data.append({
+            "id": a.id,
+            "name": a.name,
+            "phone": a.phone,
+            "city": a.city,
+            "pincode": a.pincode,
+            "full_address": a.full_address
+        })
+
+    return JsonResponse({"addresses": data})
+def get_cart(request):
+    items = Cart.objects.filter(user=request.user)
+
+    data = []
+    total = 0
+
+    for i in items:
+        subtotal = i.quantity * i.medicine.mrp
+        total += subtotal
+
+        data.append({
+            "id": i.id,
+            "name": i.medicine.name,
+            "price": i.medicine.mrp,
+            "qty": i.quantity,
+            "subtotal": subtotal
+        })
+
+    return JsonResponse({
+        "items": data,
+        "total": total
+    })
+    
+@csrf_exempt
+def update_cart(request):
+    data = json.loads(request.body)
+
+    cart_id = data.get("id")
+    qty = data.get("qty")
+
+    cart = Cart.objects.get(id=cart_id)
+
+    if qty <= 0:
+        cart.delete()
+    else:
+        cart.quantity = qty
+        cart.save()
+
+    return JsonResponse({"status": "updated"})
+
+@csrf_exempt
+def save_address(request):
+    data = json.loads(request.body)
+
+    addr = Address.objects.create(
+        user=request.user,
+        name=data["name"],
+        phone=data["phone"],
+        city=data["city"],
+        pincode=data["pincode"],
+        full_address=data["address"]
+    )
+
+    return JsonResponse({"id": addr.id})
+
+@csrf_exempt
+def place_order(request):
+    data = json.loads(request.body)
+
+    address_id = data.get("address_id")
+
+    cart_items = Cart.objects.filter(user=request.user)
+
+    total = 0
+    for i in cart_items:
+        total += i.quantity * i.medicine.mrp
+
+    order = Order.objects.create(
+        user=request.user,
+        address_id=address_id,
+        total=total
+    )
+
+    for i in cart_items:
+        OrderItem.objects.create(
+            order=order,
+            medicine=i.medicine,
+            quantity=i.quantity,
+            price=i.medicine.mrp
+        )
+
+    cart_items.delete()
+
+    return JsonResponse({"status": "order placed"})
+
+def get_orders(request):
+    orders = Order.objects.filter(user=request.user)
+
+    data = []
+    for o in orders:
+        data.append({
+            "id": o.id,
+            "status": o.status,
+            "total": o.total
+        })
+
+    return JsonResponse({"orders": data})

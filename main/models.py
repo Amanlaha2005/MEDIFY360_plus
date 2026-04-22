@@ -193,3 +193,56 @@ class FitnessRecord(models.Model):
     chol_value = models.IntegerField(null=True, blank=True)
 
     date = models.DateTimeField(auto_now_add=True)
+    
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class Medicine(models.Model):
+    name = models.CharField(max_length=200)
+    image = models.ImageField(upload_to="medicines/")
+    quantity = models.IntegerField()
+    unit = models.CharField(max_length=50, default="strip",blank=True,null=True)
+    mrp = models.FloatField(default=0)
+
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+    
+# ================= CART SYSTEM =================
+
+class Address(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=15)
+    city = models.CharField(max_length=100)
+    pincode = models.CharField(max_length=10)
+    full_address = models.TextField()
+
+class Cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    medicine = models.ForeignKey(Medicine, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
+
+class Order(models.Model):
+    STATUS = (
+        ("pending", "Pending"),
+        ("ongoing", "Ongoing"),
+        ("delivered", "Delivered")
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    address = models.ForeignKey(Address, on_delete=models.CASCADE)
+    total = models.FloatField()
+    status = models.CharField(max_length=20, choices=STATUS, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    medicine = models.ForeignKey(Medicine, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    price = models.FloatField()
