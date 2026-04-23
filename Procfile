@@ -1,0 +1,1 @@
+web: gunicorn medify360.wsgi
