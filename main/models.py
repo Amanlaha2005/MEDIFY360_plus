@@ -45,13 +45,13 @@ def create_profile(sender, instance, created, **kwargs):
 User.add_to_class('profile', property(lambda u: Profile.objects.get(user=u)))
 
 class ChatMessage(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    message = models.TextField()
-    response = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_msgs",blank=True,null=True)
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_msgs",null=True,blank=True)
 
-    def __str__(self):
-        return self.user.username
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+
+    is_read = models.BooleanField(default=False)
     
 class Doctor(models.Model):
     image = models.ImageField(upload_to='doctors/', null=True, blank=True)

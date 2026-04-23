@@ -57,7 +57,7 @@ urlpatterns = [
     path("staff/last-session/", views.get_last_session),
     path("staff/export/", views.export_attendance),
     path("staff/send-message/", views.send_message),
-    path("staff/get-messages/", views.get_messages),
+    path("staff/get-messages/<int:user_id>/", views.get_messages),
     path("staff/monthly-analytics/", views.monthly_analytics),
     path("staff/performance/", views.performance_score),
     path('emergency-alert/', views.emergency_alert),
@@ -87,4 +87,5 @@ urlpatterns = [
     path("claim-coins/", views.claim_coins),
     path("fitness/", views.fitness_view),
     path("contact/", views.contact_view),
+    
 ]

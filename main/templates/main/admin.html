@@ -1195,6 +1195,9 @@ function editMedicine(id) {
         }, 300);
     });
 }
+
+
+
 function saveCategory() {
 
     let name = document.getElementById("catName").value;
@@ -2244,6 +2247,30 @@ function viewStaff(id) {
         document.getElementById("mainContent").innerHTML = html;
     });
 }
+function loadStaff() {
+
+    fetch("/get-staff/")
+    .then(res => res.json())
+    .then(data => {
+
+        let html = `<h2 class="section-title">Staff</h2>`;
+
+        data.staff.forEach(s => {
+
+            html += `
+                <div class="doctor-card">
+                    <h3>${s.name}</h3>
+                    <p>${s.phone}</p>
+
+                    <!-- 🔥 EXACT PLACE -->
+                    
+                </div>
+            `;
+        });
+
+        document.getElementById("mainContent").innerHTML = html;
+    });
+}
       function loadDoctorDropdown() {
         fetch("/get-doctors/")
           .then((res) => res.json())
@@ -3143,7 +3170,7 @@ function viewStaff(id) {
 
         } else if (section === "staff") {
           document.getElementById("mainContent").innerHTML = renderStaff();
-
+          loadStaff();
           loadStaffSection();
 
         } else if (section === "requests") {
@@ -3589,7 +3616,36 @@ function viewStaff(id) {
               });
           });
       };
+function sendAdminMessage(userId) {
 
+    let msg = document.getElementById("chatMsg").value;
+
+    if (!msg) return;
+
+    fetch("/send-message/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken()
+        },
+        body: JSON.stringify({
+            receiver_id: userId,
+            message: msg
+        })
+    })
+    .then(() => {
+        document.getElementById("chatMsg").value = "";
+
+        // 🔥 reload chat
+        openChat(userId);
+
+        // remove old modal (avoid duplicate)
+        document.getElementById("chatModal").remove();
+    });
+}
+function closeChat() {
+    document.getElementById("chatModal").remove();
+}
       function sendAppointment() {
         fetch("/add-appointment/", {
           method: "POST",
