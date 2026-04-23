@@ -525,7 +525,50 @@ def add_citizen(request):
 
     return JsonResponse({"status": "error"})
 
+from django.views.decorators.csrf import csrf_exempt
+import json
 
+@csrf_exempt
+def add_coins(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        amount = int(data.get("amount", 0))
+
+        profile = request.user.profile
+        profile.coins += amount
+        profile.save()
+
+        return JsonResponse({
+            "coins": profile.coins
+        })
+        
+from django.http import JsonResponse
+
+def get_coins(request):
+    if request.user.is_authenticated:
+        return JsonResponse({
+            "coins": request.user.profile.coins
+        })
+    return JsonResponse({"coins": 0})
+
+@csrf_exempt
+def use_coins(request):
+    if request.method == "POST":
+        profile = request.user.profile
+
+        coins = profile.coins
+
+        # Example: 500 coins = 5% discount
+        discount = 0
+        if coins >= 500:
+            discount = 5
+            profile.coins = 0
+            profile.save()
+
+        return JsonResponse({
+            "discount": discount,
+            "coins": profile.coins
+        })
 # GET ALL CITIZENS
 from django.db.models import Avg, Count
 

@@ -2247,30 +2247,14 @@ function viewStaff(id) {
         document.getElementById("mainContent").innerHTML = html;
     });
 }
-function loadStaff() {
 
-    fetch("/get-staff/")
-    .then(res => res.json())
-    .then(data => {
 
-        let html = `<h2 class="section-title">Staff</h2>`;
 
-        data.staff.forEach(s => {
 
-            html += `
-                <div class="doctor-card">
-                    <h3>${s.name}</h3>
-                    <p>${s.phone}</p>
 
-                    <!-- 🔥 EXACT PLACE -->
-                    
-                </div>
-            `;
-        });
 
-        document.getElementById("mainContent").innerHTML = html;
-    });
-}
+
+
       function loadDoctorDropdown() {
         fetch("/get-doctors/")
           .then((res) => res.json())
@@ -3170,7 +3154,7 @@ function loadStaff() {
 
         } else if (section === "staff") {
           document.getElementById("mainContent").innerHTML = renderStaff();
-          loadStaff();
+          
           loadStaffSection();
 
         } else if (section === "requests") {

@@ -453,7 +453,13 @@ function openCart() {
 function closeCart() {
     document.getElementById("cartDrawer").classList.remove("open");
 }
-
+function loadCoins() {
+    fetch("/get-coins/")
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("coinValue").innerText = data.coins;
+    });
+}
 // 🔥 LOAD CART
 function loadCart() {
     fetch("/get-cart/")
@@ -530,27 +536,30 @@ function loadCart() {
 }
 
 function claimCoin(type) {
-    fetch("/claim-coins/", {
+
+    let rewardMap = {
+        BMI: 80,
+        DOCTOR: 60,
+        RISK: 100,
+        PROFILE: 30
+    };
+
+    let amount = rewardMap[type];
+
+    fetch("/add-coins/", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": getCSRFToken()
         },
-        body: JSON.stringify({ type })
+        body: JSON.stringify({ amount })
     })
     .then(res => res.json())
     .then(data => {
-        if (data.status === "CLAIMED") {
-            alert("Reward Claimed Successfully! 🎉");
-        } else if (data.status === "PENDING") {
-            alert("Claim Request Sent! Wait for verification. ⏳");
-        } else {
-            alert(data.error || "Error claiming reward");
-        }
-        loadCart(); // refresh UI
+        document.getElementById("coinValue").innerText = data.coins;
+        alert("Coins Added 🎉");
     });
 }
-
 function openRewards() {
     document.getElementById("rewardsDrawer").classList.add("open");
 }
@@ -748,29 +757,62 @@ function confirmOrder() {
         return;
     }
 
-    fetch("/place-order/", {
+    // 🔥 disable button (prevent multiple clicks)
+    let btn = event.target;
+    btn.disabled = true;
+    btn.innerText = "Processing...";
+
+    // 🔥 STEP 1: APPLY COINS (optional)
+    fetch("/use-coins/", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": getCSRFToken()
-        },
-        body: JSON.stringify({
-            address_id: selectedAddressId
-        })
+        }
+    })
+    .then(res => res.json())
+    .then(coinData => {
+
+        // 🔥 STEP 2: PLACE ORDER
+        return fetch("/place-order/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: JSON.stringify({
+                address_id: selectedAddressId,
+                discount: coinData.discount || 0   // 🔥 pass discount
+            })
+        });
     })
     .then(res => res.json())
     .then(data => {
+
         if (data.status === "success") {
+
             alert("Order placed ✅");
+
             closeCart();
             loadOrderStatus();
+            loadCoins();   // 🔥 refresh coin UI
+
         } else {
             alert("Error: " + (data.error || "Unknown error"));
         }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Something went wrong ❌");
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerText = "Confirm Order";
     });
 }
 loadStore();
 loadOrderStatus();
+loadCoins();
 
 </script>
 

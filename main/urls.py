@@ -87,5 +87,7 @@ urlpatterns = [
     path("claim-coins/", views.claim_coins),
     path("fitness/", views.fitness_view),
     path("contact/", views.contact_view),
-    
+    path("get-coins/", views.get_coins),
+    path("add-coins/", views.add_coins),
+    path("use-coins/", views.use_coins),
 ]
