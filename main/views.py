@@ -1728,15 +1728,47 @@ BMI: {bmi}
                 "exercise": "Morning: 30 min walking | Evening: Light yoga + stretching"
             })
 from .models import Medicine,Category
-@csrf_exempt
+from django.http import JsonResponse
+from .models import Category
+
+import json
+from django.http import JsonResponse
+from .models import Category
+
 def add_category(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        name = data.get("name")
+        try:
+            data = json.loads(request.body)
+            name = data.get("name", "").strip()
 
-        Category.objects.create(name=name)
+            # 🔥 EMPTY CHECK
+            if not name:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Category name required ❌"
+                })
 
-        return JsonResponse({"status": "success"})
+            # 🔥 DUPLICATE CHECK
+            if Category.objects.filter(name__iexact=name).exists():
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Category already exists ❌"
+                })
+
+            Category.objects.create(name=name)
+
+            return JsonResponse({
+                "status": "success",
+                "message": "Category added ✅"
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                "status": "error",
+                "message": str(e)
+            })
+
+    return JsonResponse({"status": "error"})
 def get_categories(request):
     cats = Category.objects.all()
 
@@ -1880,6 +1912,42 @@ def get_cart(request):
         "claims": claim_map
     })
     
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import Contact
+
+from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.conf import settings
+@csrf_exempt
+def contact_view(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        subject = request.POST.get("subject")
+        message = request.POST.get("message")
+
+        full_message = f"""
+New Contact Message 🚀
+
+Name: {name}
+Email: {email}
+Subject: {subject}
+
+Message:
+{message}
+"""
+
+        send_mail(
+            subject=f"Contact: {subject}",
+            message=full_message,
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[settings.EMAIL_HOST_USER],
+        )
+
+        return JsonResponse({"status": "success"})
+
+    return JsonResponse({"status": "error"})
 @csrf_exempt
 def update_cart(request):
     data = json.loads(request.body)

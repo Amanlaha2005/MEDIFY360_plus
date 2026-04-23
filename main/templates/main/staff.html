@@ -33,21 +33,28 @@
       --white: #ffffff;
       --teal: #00b8a9;
     }
+    html { background: #0a1927; }
     body {
       font-family: "Inter", sans-serif;
-      background: var(--navy);
+      background: linear-gradient(145deg, #0a1219 0%, #0f1a24 100%);
       color: var(--gray-900);
       overflow-x: hidden;
+      min-height: 100vh;
     }
     /* Header / Top Bar */
     .top-bar {
-      background: var(--sidebar-bg);
-      padding: 16px 32px;
+      background: rgba(11, 31, 58, 0.85);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border-light);
+      padding: 0 40px;
+      height: 72px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid var(--border-light);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
     .logo {
       display: flex;
@@ -55,31 +62,26 @@
       gap: 10px;
       cursor: pointer;
     }
-    .logo img {
-      width: 45px;
-      height: 35px;
-      border-radius: 8px;
-      padding: 4px;
-    }
-    .logo p {
-      font-size: 1.2rem;
-      font-weight: 700;
-    }
+    .logo img { width: 50px; height: 38px; border-radius: 8px; padding: 4px; }
+    .logo p { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
     .medify { color: var(--white); }
     .number { color: var(--teal); }
     .staff-info {
       display: flex;
       align-items: center;
       gap: 20px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
     .staff-name {
       font-weight: 500;
       color: var(--gray-100);
+      white-space: nowrap;
     }
     .logout-btn {
       background: rgba(239,68,68,0.1);
       border: 1px solid rgba(239,68,68,0.3);
-      padding: 8px 18px;
+      padding: 8px 20px;
       border-radius: 30px;
       color: #ff8a8a;
       font-weight: 500;
@@ -88,6 +90,8 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      font-size: 0.85rem;
+      white-space: nowrap;
     }
     .logout-btn:hover {
       background: rgba(239,68,68,0.25);
@@ -108,32 +112,35 @@
       margin-bottom: 40px;
       text-align: center;
       transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .status-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.3);
     }
     .status-icon {
       width: 90px;
       height: 90px;
-      background: rgba(0,184,169,0.15);
+      background: linear-gradient(135deg, rgba(0,184,169,0.2), rgba(0,184,169,0.05));
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto 20px;
     }
-    .status-icon i {
-      font-size: 48px;
-      color: var(--accent);
-    }
+    .status-icon i { font-size: 48px; color: var(--accent); }
     .status-text {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       font-weight: 700;
       margin-bottom: 8px;
+      color: var(--white);
     }
     .status-badge {
       display: inline-block;
       padding: 6px 18px;
       border-radius: 40px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       margin-bottom: 24px;
     }
     .badge-online {
@@ -148,7 +155,7 @@
     }
     .toggle-btn {
       background: var(--accent);
-      color: white;
+      color: #0a1219;
       border: none;
       padding: 12px 32px;
       border-radius: 40px;
@@ -159,14 +166,17 @@
       display: inline-flex;
       align-items: center;
       gap: 12px;
+      box-shadow: 0 6px 24px rgba(0,180,166,0.4);
+    }
+    .toggle-btn:hover {
+      background: var(--accent-light);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(0,180,166,0.5);
     }
     .toggle-btn.offline {
       background: var(--gray-300);
       color: var(--gray-900);
-    }
-    .toggle-btn:hover {
-      transform: translateY(-2px);
-      filter: brightness(1.05);
+      box-shadow: none;
     }
     .last-session {
       margin-top: 20px;
@@ -175,31 +185,36 @@
     }
     /* Stats row */
     .stats-row {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 24px;
-      flex-wrap: wrap;
       margin-bottom: 40px;
     }
     .stat-mini {
       background: var(--card-bg);
-      border-radius: 20px;
-      padding: 20px 28px;
-      flex: 1;
-      min-width: 180px;
+      border-radius: 24px;
+      padding: 24px;
       border: 1px solid var(--border-light);
       text-align: center;
+      transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .stat-mini:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.3);
     }
     .stat-mini .value {
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 800;
       color: var(--white);
+      margin-bottom: 4px;
     }
     .stat-mini .label {
       color: var(--gray-300);
       font-size: 0.85rem;
-      margin-top: 6px;
+      font-weight: 500;
     }
-    /* History Table */
+    /* Section headers */
     .section-header {
       display: flex;
       justify-content: space-between;
@@ -209,10 +224,11 @@
       gap: 16px;
     }
     .section-title {
-      font-size: 1.4rem;
+      font-size: 1.6rem;
       font-weight: 700;
       color: var(--white);
     }
+    /* Data tables */
     .data-table {
       background: var(--card-bg);
       border-radius: 20px;
@@ -231,31 +247,131 @@
       color: var(--gray-200);
       background: rgba(0,0,0,0.2);
       border-bottom: 1px solid var(--border-light);
+      font-size: 0.875rem;
     }
     td {
       padding: 14px 20px;
       border-bottom: 1px solid var(--border-light);
       color: var(--gray-300);
+      font-size: 0.875rem;
     }
-    tr:hover td {
-      background: rgba(255,255,255,0.03);
-    }
+    tr:hover td { background: rgba(255,255,255,0.03); }
     .empty-row td {
       text-align: center;
       padding: 40px;
       color: var(--gray-500);
     }
-    .btn-small {
-      background: rgba(239,68,68,0.2);
-      border: none;
-      padding: 4px 12px;
-      border-radius: 20px;
-      color: var(--danger);
-      cursor: pointer;
+    /* Buttons */
+    .btn-small, .filter-btn {
+      background: rgba(0,184,169,0.15);
+      border: 1px solid rgba(0,184,169,0.4);
+      color: #00b8a9;
+      padding: 6px 14px;
+      border-radius: 40px;
+      font-family: 'Inter', sans-serif;
       font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
-    .btn-small:hover {
-      background: rgba(239,68,68,0.4);
+    .btn-small:hover, .filter-btn:hover {
+      background: rgba(0,184,169,0.25);
+      border-color: #00b8a9;
+      transform: translateY(-1px);
+    }
+    input[type="date"], input[type="month"] {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 8px 12px;
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input[type="date"]:focus, input[type="month"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,184,169,0.2);
+    }
+    /* White calendar icon */
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="month"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+      opacity: 0.7;
+    }
+    /* Chat widget */
+    .chat-widget {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 24px;
+      border: 1px solid var(--border-light);
+      margin-top: 30px;
+    }
+    .chat-widget h3 {
+      color: var(--white);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.2rem;
+    }
+    #chatBox {
+      height: 220px;
+      width: 100%;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.2);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-size: 0.85rem;
+      box-sizing: border-box;
+    }
+    #chatBox div {
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .chat-input-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    #chatInput {
+      width: 100%;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border-light);
+      border-radius: 40px;
+      padding: 12px 18px;
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      box-sizing: border-box;
+    }
+    #chatInput:focus { border-color: var(--accent); }
+    .chat-send-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 40px;
+      padding: 10px 28px;
+      color: #0a1219;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chat-send-btn:hover {
+      background: var(--accent-light);
+      transform: translateY(-1px);
     }
     footer {
       text-align: center;
@@ -265,10 +381,60 @@
       font-size: 0.8rem;
       border-top: 1px solid var(--border-light);
     }
+    /* Profile dropdown */
+    .profile-wrapper {
+      position: relative;
+    }
+    .profile-img {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      cursor: pointer;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+    }
+    .profile-dropdown {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 50px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      padding: 8px 0;
+      width: 180px;
+      z-index: 200;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .profile-dropdown div {
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--gray-100);
+    }
+    .profile-dropdown div:hover {
+      background: rgba(0,184,169,0.15);
+      color: var(--accent);
+    }
+    /* Responsive adjustments */
     @media (max-width: 768px) {
       .main-container { padding: 20px; }
-      .status-text { font-size: 1.4rem; }
-      .toggle-btn { padding: 10px 24px; }
+      .stats-row { grid-template-columns: 1fr; }
+      .top-bar { padding: 0 20px; height: auto; flex-wrap: wrap; gap: 10px; padding: 12px 20px; }
+      .staff-info { gap: 12px; }
+      .staff-name { font-size: 0.85rem; white-space: normal; }
+      .logout-btn { padding: 6px 14px; font-size: 0.75rem; }
+      .section-header { flex-direction: column; align-items: stretch; }
+      .section-header > div { justify-content: center; }
+      .chat-input-container { align-items: stretch; }
+      .chat-send-btn { justify-content: center; }
+    }
+    @media (max-width: 480px) {
+      .top-bar { flex-direction: column; text-align: center; }
+      .staff-info { width: 100%; justify-content: center; }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -281,650 +447,481 @@
     <p><span class="medify">MediFy</span><span class="number">360</span></p>
   </div>
   <div class="staff-info">
-    <!-- 🔥 PROFILE IMAGE -->
-  <div style="position:relative;">
-
-  <img id="profileImage" src="" 
-       style="width:35px;height:35px;border-radius:50%;cursor:pointer;">
-
-  <!-- 🔥 DROPDOWN -->
-  <div id="profileMenu" style="
-      display:none;
-      position:absolute;
-      right:0;
-      top:45px;
-      background:#11212e;
-      border:1px solid #1e2a36;
-      border-radius:10px;
-      padding:10px;
-      width:160px;
-      z-index:100;
-  ">
-      <div onclick="viewProfile()" style="padding:8px;cursor:pointer;">👤 View Profile</div>
-      <div onclick="editProfile()" style="padding:8px;cursor:pointer;">✏️ Edit Profile</div>
-      <div onclick="changeImage()" style="padding:8px;cursor:pointer;">
-        📸 Change Image
+    <div class="profile-wrapper">
+      <img id="profileImage" class="profile-img" src="" alt="profile">
+      <div id="profileMenu" class="profile-dropdown">
+        <div onclick="viewProfile()"><i class="fas fa-user"></i> View Profile</div>
+        <div onclick="editProfile()"><i class="fas fa-edit"></i> Edit Profile</div>
+        <div onclick="changeImage()"><i class="fas fa-camera"></i> Change Image</div>
+      </div>
     </div>
-      <div onclick="handleLogout()" style="padding:8px;color:red;cursor:pointer;">🚪 Logout</div>
-  </div>
-
-</div>
-  <!-- 🔥 HIDDEN FILE INPUT -->
-  <input type="file" id="imageInput" style="display:none" accept="image/*">
-
-
-<span class="staff-name" id="staffName">
-  <i class="fas fa-user-circle"></i> Loading...
-</span>
+    <span class="staff-name" id="staffName">Loading...</span>
     <div class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</div>
   </div>
 </div>
 
 <div class="main-container">
-   <!-- 🔥 ADD HERE -->
-  <div id="alertBox" style="
-      text-align:center;
-      margin-bottom:15px;
-      font-weight:600;
-      color:#f59e0b;
-  "></div>
-  <!-- Status Card with Toggle Button -->
+  <div id="alertBox" style="text-align:center; margin-bottom:15px; font-weight:600; color:#f59e0b;"></div>
+
   <div class="status-card">
-    <div class="status-icon">
-      <i class="fas fa-user-shield"></i>
-    </div>
+    <div class="status-icon"><i class="fas fa-user-shield"></i></div>
     <div class="status-text" id="statusText">You are <span id="statusLabel">Offline</span></div>
-    <div>
-      <span class="status-badge" id="statusBadge">⚫ Offline</span>
-    </div>
-    <button class="toggle-btn" id="toggleStatusBtn"><i class="fas fa-power-off"></i> <span id="btnText">Go Online</span></button>
+    <div><span class="status-badge" id="statusBadge">⚫ Offline</span></div>
+    <button class="toggle-btn offline" id="toggleStatusBtn"><i class="fas fa-power-off"></i> <span id="btnText">Go Online</span></button>
     <div class="last-session" id="lastSessionInfo"></div>
-    <div id="liveTimer" style="margin-top:10px;font-weight:600;color:#00b8a9;"></div>
+    <div id="liveTimer" style="margin-top:10px; font-weight:600; color:#00b8a9;"></div>
   </div>
 
-  <!-- Quick Stats -->
   <div class="stats-row">
-    <div style="background:#11212e;padding:20px;border-radius:20px;margin-bottom:30px;">
-  <h3 style="color:white;margin-bottom:15px;">📊 Weekly Work Hours</h3>
-  <canvas id="hoursChart" height="100"></canvas>
-</div>
-    <div class="stat-mini">
-      <div class="value" id="totalSessions">0</div>
-      <div class="label">Total Sessions</div>
-    </div>
-    <div class="stat-mini">
-      <div class="value" id="totalHours">0.0</div>
-      <div class="label">Total Hours</div>
-    </div>
-    <div class="stat-mini">
-      <div class="value" id="avgHours">0.0</div>
-      <div class="label">Avg / Session (hrs)</div>
-    </div>
-    <div class="stat-mini">
-  <div class="value" id="todayHours">0.0</div>
-  <div class="label">Today Hours</div>
-</div>
-<div class="stat-mini">
-  <div class="value" id="performanceScore">0%</div>
-  <div class="label">Performance</div>
-</div>
+    <div class="stat-mini"><div class="value" id="totalSessions">0</div><div class="label">Total Sessions</div></div>
+    <div class="stat-mini"><div class="value" id="totalHours">0.0</div><div class="label">Total Hours</div></div>
+    <div class="stat-mini"><div class="value" id="avgHours">0.0</div><div class="label">Avg / Session (hrs)</div></div>
+    <div class="stat-mini"><div class="value" id="todayHours">0.0</div><div class="label">Today Hours</div></div>
+    <div class="stat-mini"><div class="value" id="performanceScore">0%</div><div class="label">Performance</div></div>
   </div>
 
-  <!-- History Logs -->
+  <div style="background: var(--card-bg); border-radius: 24px; padding: 24px; margin-bottom: 40px; border: 1px solid var(--border-light);">
+    <h3 style="color: var(--white); margin-bottom: 20px;"><i class="fas fa-chart-line"></i> Weekly Work Hours</h3>
+    <canvas id="hoursChart" height="100"></canvas>
+  </div>
+
   <div class="section-header">
-    <div style="margin-bottom:15px;">
-  <input type="date" id="filterDate">
-  <input type="month" id="filterMonth">
-  <button onclick="applyFilter()">Filter</button>
-</div>
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <input type="date" id="filterDate">
+      <input type="month" id="filterMonth">
+      <button onclick="applyFilter()" class="btn-small"><i class="fas fa-filter"></i> Filter</button>
+    </div>
     <h2 class="section-title"><i class="fas fa-history"></i> Attendance Timeline</h2>
-    <button onclick="exportData()" class="btn-small">
-  <i class="fas fa-download"></i> Export
-</button>
+    <button onclick="exportData()" class="btn-small"><i class="fas fa-download"></i> Export</button>
   </div>
   <div class="data-table">
     <table id="historyTable">
-      <thead>
-        <tr><th>Date</th><th>Start Time</th><th>End Time</th><th>Duration</th><th>Status</th></tr>
-      </thead>
-      <tbody id="historyBody">
-        <tr class="empty-row"><td colspan="5">No records yet. Go online to start tracking.</td></tr>
-      </tbody>
+      <thead><tr><th>Date</th><th>Start Time</th><th>End Time</th><th>Duration</th><th>Status</th></tr></thead>
+      <tbody id="historyBody"><tr class="empty-row"><td colspan="5">No records yet. Go online to start tracking.</td></tr></tbody>
     </table>
   </div>
-  <!-- 🔥 ADD THIS ABOVE FOOTER -->
 
-<div style="background:#11212e;padding:20px;border-radius:20px;margin-top:30px;">
-  <h3 style="color:white;">💬 Chat with Admin</h3>
+  <div class="chat-widget">
+    <h3><i class="fas fa-comment-dots"></i> Chat with Admin</h3>
+    <div id="chatBox"></div>
+    <div class="chat-input-container">
+      <input type="text" id="chatInput" placeholder="Type your message...">
+      <button class="chat-send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Send</button>
+    </div>
+  </div>
 
-  <div id="chatBox" style="height:200px;overflow-y:auto;margin-bottom:10px;"></div>
-
-  <input type="text" id="chatInput" placeholder="Type message...">
-  <button onclick="sendMessage()">Send</button>
-</div>
-  <footer>
-    <i class="fas fa-clock"></i> Your online/offline times are recorded locally. Stay productive!
-  </footer>
+  <footer><i class="fas fa-clock"></i> Your online/offline times are recorded. Stay productive!</footer>
 </div>
 
 <script>
+  // ----------------------------------------------
+  // GLOBAL STATE
+  // ----------------------------------------------
   let sessionStartTime = null;
-let timerInterval = null;
+  let timerInterval = null;
   let currentSessionId = null;
 
-function applyFilter() {
-
-    let date = document.getElementById("filterDate").value;
-    let month = document.getElementById("filterMonth").value;
-
-    let url = "/staff/history/?";
-
-    if (date) {
-        url += "date=" + date;
-    } else if (month) {
-        url += "month=" + month;
-    }
-
-    fetch(url)
-    .then(res => res.json())
-    .then(data => {
-
-        let records = data.data;
-        const tbody = document.getElementById("historyBody");
-
-        let html = "";
-
-        records.forEach(day => {
-            html += `
-                <tr>
-                    <td>${day.date}</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>${day.total_hours} hrs</td>
-                    <td>Completed</td>
-                </tr>
-            `;
-        });
-
-        tbody.innerHTML = html;
-    });
-}
-function startSession() {
-
-    fetch("/staff/start/", {
-        method: "POST"
-    })
-    .then(res => res.json())
-    .then(data => {
-
-        // 🔥 SET SESSION ID
-        currentSessionId = data.id;
-
-        // 🔥 SET START TIME (important for timer)
-        sessionStartTime = new Date().toISOString();
-
-        // 🔥 UPDATE UI
-        updateUIForOnline();
-
-        // 🔥 START LIVE TIMER
-        startLiveTimer();
-    });
-}
-function changeImage() {
-    document.getElementById("imageInput").click();
-}
-function loadGraph() {
-
-    fetch("/staff/weekly-hours/")
-    .then(res => res.json())
-    .then(data => {
-
-        const ctx = document.getElementById("hoursChart").getContext("2d");
-
-        new Chart(ctx, {
-            type: "bar",
-            data: {
-                labels: data.labels,
-                datasets: [{
-                    label: "Hours",
-                    data: data.data,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false }
-                }
-            }
-        });
-    });
-}
-  function endSession() {
-
-    fetch("/staff/end/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            sessionId: currentSessionId
-        })
-    })
-    .then(res => res.json())
-    .then(() => {
-
-        currentSessionId = null;
-
-        updateUIForOffline();
-        loadHistory();
-        loadTodayHours();
-    });
-}
-document.getElementById("profileImage").addEventListener("click", function(e) {
-
-    let menu = document.getElementById("profileMenu");
-
-    menu.style.display = (menu.style.display === "block") ? "none" : "block";
-
-    e.stopPropagation();
-});
-
-// close when clicking outside
-document.addEventListener("click", function() {
-    document.getElementById("profileMenu").style.display = "none";
-});
-function loadTodayHours() {
-
-    fetch("/staff/today-hours/")
-    .then(res => res.json())
-    .then(data => {
-
-        document.getElementById("todayHours").innerText =
-            data.today_hours.toFixed(2);
-    });
-}
-
-function exportData() {
-    window.open("/staff/export/", "_blank");
-}
-function viewProfile() {
-
-    fetch("/get-profile/")
-    .then(res => res.json())
-    .then(data => {
-
-        alert(
-`👤 Name: ${data.name}
-📧 Email: ${data.email}
-
-🎂 Age: ${data.age || "Not set"}
-📏 Height: ${data.height || "Not set"} cm
-⚖ Weight: ${data.weight || "Not set"} kg
-🧠 BMI: ${data.bmi || "Not set"}`
-        );
-    });
-}
-
-function editProfile() {
-
-    fetch("/get-profile/")
-    .then(res => res.json())
-    .then(data => {
-
-        let age = prompt("Enter Age:", data.age || "");
-        let height = prompt("Enter Height (cm):", data.height || "");
-        let weight = prompt("Enter Weight (kg):", data.weight || "");
-
-        fetch("/update-profile/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                age: age,
-                height: height,
-                weight: weight
-            })
-        })
-        .then(res => res.json())
-        .then(resp => {
-
-            if (resp.status === "success") {
-                alert(`✅ Updated Successfully\nBMI: ${resp.bmi}`);
-            } else {
-                alert("Error updating profile");
-            }
-        });
-    });
-}
+  // ----------------------------------------------
+  // UI UPDATE HELPERS
+  // ----------------------------------------------
   function updateUIForOnline(startDisplay = null) {
+    const statusLabel = document.getElementById('statusLabel');
+    const statusBadge = document.getElementById('statusBadge');
+    const btnText = document.getElementById('btnText');
+    const toggleBtn = document.getElementById('toggleStatusBtn');
+    const statusText = document.getElementById('statusText');
+    const lastSession = document.getElementById('lastSessionInfo');
 
-    document.getElementById('statusLabel').innerText = 'Online';
-    document.getElementById('statusBadge').innerHTML = '🟢 Online';
-    document.getElementById('statusBadge').className = 'status-badge badge-online';
-    document.getElementById('btnText').innerHTML = 'Go Offline';
-    document.getElementById('toggleStatusBtn').classList.remove('offline');
-
-    // 🔥 SMART MESSAGE
+    statusLabel.innerText = 'Online';
+    statusBadge.innerHTML = '🟢 Online';
+    statusBadge.className = 'status-badge badge-online';
+    btnText.innerHTML = 'Go Offline';
+    toggleBtn.classList.remove('offline');
     if (startDisplay) {
-        document.getElementById('statusText').innerHTML =
-            `You are <span id="statusLabel">Online</span> since ${startDisplay}`;
+      statusText.innerHTML = `You are <span id="statusLabel">Online</span> since ${startDisplay}`;
     } else {
-        document.getElementById('statusText').innerHTML =
-            `You are <span id="statusLabel">Online</span>`;
+      statusText.innerHTML = `You are <span id="statusLabel">Online</span>`;
     }
-
-    document.getElementById('lastSessionInfo').innerHTML =
-        `<i class="fas fa-play-circle"></i> You are Online`;
-}
-
-  function updateUIForOffline() {
-    document.getElementById('statusLabel').innerText = 'Offline';
-    document.getElementById('statusBadge').innerHTML = '⚫ Offline';
-    document.getElementById('statusBadge').className = 'status-badge badge-offline';
-    document.getElementById('btnText').innerHTML = 'Go Online';
-    document.getElementById("alertBox").innerText = "";
-    document.getElementById('toggleStatusBtn').classList.add('offline');
-    if (!currentSessionId) {
-      document.getElementById('lastSessionInfo').innerHTML = `<i class="fas fa-history"></i> You are offline. Click "Go Online" to start tracking.`;
-    }
-    if (timerInterval) {
-    clearInterval(timerInterval);
-}
-
-document.getElementById("liveTimer").innerText = "";
+    lastSession.innerHTML = `<i class="fas fa-play-circle"></i> You are Online`;
   }
 
-// 🔥 UPLOAD IMAGE
-document.getElementById("imageInput").addEventListener("change", function() {
+  function updateUIForOffline() {
+    const statusLabel = document.getElementById('statusLabel');
+    const statusBadge = document.getElementById('statusBadge');
+    const btnText = document.getElementById('btnText');
+    const toggleBtn = document.getElementById('toggleStatusBtn');
+    const lastSession = document.getElementById('lastSessionInfo');
+    const liveTimer = document.getElementById('liveTimer');
+    const alertBox = document.getElementById('alertBox');
 
-    let file = this.files[0];
+    statusLabel.innerText = 'Offline';
+    statusBadge.innerHTML = '⚫ Offline';
+    statusBadge.className = 'status-badge badge-offline';
+    btnText.innerHTML = 'Go Online';
+    toggleBtn.classList.add('offline');
+    lastSession.innerHTML = `<i class="fas fa-history"></i> You are offline. Click "Go Online" to start tracking.`;
+    if (timerInterval) clearInterval(timerInterval);
+    liveTimer.innerText = "";
+    if (alertBox) alertBox.innerText = "";
+  }
 
-    let formData = new FormData();
-    formData.append("image", file);
-
-    fetch("/upload-avatar/", {
-        method: "POST",
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-
-        if (data.status === "success") {
-            document.getElementById("profileImage").src = data.image_url;
-        } else {
-            alert("Upload failed");
-        }
-    });
-});
- 
-function loadProfile() {
-    fetch("/get-profile/")
-    .then(res => res.json())
-    .then(data => {
-
-        // ✅ name
-        document.getElementById("staffName").innerHTML =
-            `<i class="fas fa-user-circle"></i> ${data.name} (Staff)`;
-
-        // ✅ image
-        if (data.image) {
-            document.getElementById("profileImage").src = data.image;
-        } else {
-            document.getElementById("profileImage").src =
-                "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-        }
-    });
-}
-
- function toggleStatus() {
-    if (currentSessionId) {
-        endSession();
-    } else {
-        startSession();
-    }
-}
-
-function handleLogout() {
-    fetch("/logout/", {
-        method: "POST"
-    })
-    .then(res => res.json())
-    .then(() => {
-        window.location.href = "/";   // go to login page
-    });
-}
-
-function checkAlerts() {
-
+  // ----------------------------------------------
+  // LIVE TIMER
+  // ----------------------------------------------
+  function startLiveTimer() {
     if (!sessionStartTime) return;
-
-    let start = new Date(sessionStartTime);
-    let now = new Date();
-
-    let diffHours = (now - start) / (1000 * 60 * 60);
-
-    let alertBox = document.getElementById("alertBox");
-
-    if (diffHours >= 8) {
-        alertBox.innerText = "⚠️ You have been online for 8+ hours. Take a break!";
-    }
-    else if (diffHours >= 4) {
-        alertBox.innerText = "💡 You have been working for 4+ hours.";
-    }
-    else {
-        alertBox.innerText = "";
-    }
-}
-function checkCurrentSession() {
-    fetch("/staff/current/")
-    .then(res => res.json())
-    .then(data => {
-
-        if (data.active) {
-            currentSessionId = data.id;
-sessionStartTime = data.start_time;
-
-sessionStartTime = data.start_time;
-updateUIForOnline(data.start_display);
-
-startLiveTimer();   // 🔥 ADD THIS
-        } else {
-            currentSessionId = null;
-            updateUIForOffline();
-        }
-    });
-}
-function startLiveTimer() {
-
-    if (!sessionStartTime) return;
-
-    // clear previous interval
-    if (timerInterval) {
-        clearInterval(timerInterval);
-    }
-
+    if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
-      checkAlerts();   // 🔥 ADD THIS
-        let start = new Date(sessionStartTime);
-        let now = new Date();
-
-        let diff = Math.floor((now - start) / 1000); // seconds
-
-        let hrs = Math.floor(diff / 3600);
-        let mins = Math.floor((diff % 3600) / 60);
-        let secs = diff % 60;
-
-        document.getElementById("liveTimer").innerText =
-            `⏱️ Online for: ${hrs}h ${mins}m ${secs}s`;
-
+      const start = new Date(sessionStartTime);
+      const now = new Date();
+      const diff = Math.floor((now - start) / 1000);
+      const hrs = Math.floor(diff / 3600);
+      const mins = Math.floor((diff % 3600) / 60);
+      const secs = diff % 60;
+      const liveTimer = document.getElementById('liveTimer');
+      if (liveTimer) liveTimer.innerText = `⏱️ Online for: ${hrs}h ${mins}m ${secs}s`;
+      const alertBox = document.getElementById('alertBox');
+      if (alertBox) {
+        if (hrs >= 8) alertBox.innerText = "⚠️ You have been online for 8+ hours. Take a break!";
+        else if (hrs >= 4) alertBox.innerText = "💡 You have been working for 4+ hours.";
+        else alertBox.innerText = "";
+      }
     }, 1000);
-}
-function loadLastSession() {
+  }
 
-    fetch("/staff/last-session/")
-    .then(res => res.json())
-    .then(data => {
+  // ----------------------------------------------
+  // SESSION CONTROL (BACKEND INTEGRATION)
+  // ----------------------------------------------
+  async function startSession() {
+    try {
+      const response = await fetch("/staff/start/", { method: "POST" });
+      const data = await response.json();
+      if (data.id) {
+        currentSessionId = data.id;
+        sessionStartTime = new Date().toISOString();
+        updateUIForOnline();
+        startLiveTimer();
+        await loadHistory();
+        await loadTodayHours();
+      } else {
+        console.error("Start session: no id returned", data);
+      }
+    } catch (err) {
+      console.error("Start session error:", err);
+    }
+  }
 
-        let box = document.getElementById("lastSessionInfo");
+  async function endSession() {
+    if (!currentSessionId) return;
+    try {
+      await fetch("/staff/end/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: currentSessionId })
+      });
+    } catch (err) {
+      console.error("End session error:", err);
+    }
+    currentSessionId = null;
+    sessionStartTime = null;
+    updateUIForOffline();
+    await loadHistory();
+    await loadTodayHours();
+  }
 
-        if (!data.exists) {
-            box.innerHTML = "No previous session";
-            return;
+  async function checkCurrentSession() {
+    try {
+      const response = await fetch("/staff/current/");
+      const data = await response.json();
+      if (data.active && data.id) {
+        currentSessionId = data.id;
+        sessionStartTime = data.start_time;
+        updateUIForOnline();
+        startLiveTimer();
+      } else {
+        updateUIForOffline();
+      }
+    } catch (err) {
+      console.error("Check current session error:", err);
+      updateUIForOffline();
+    }
+  }
+
+  // ----------------------------------------------
+  // DATA LOADING FUNCTIONS
+  // ----------------------------------------------
+  async function loadHistory() {
+    try {
+      const response = await fetch("/staff/history/");
+      const data = await response.json();
+      const records = data.data || [];
+      const tbody = document.getElementById("historyBody");
+      if (!records.length) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="5">No records yet. Go online to start tracking.</td></tr>`;
+        document.getElementById("totalSessions").innerText = 0;
+        document.getElementById("totalHours").innerText = "0.0";
+        document.getElementById("avgHours").innerText = "0.0";
+        return;
+      }
+      let totalSessions = 0;
+      let totalHours = 0;
+      let html = "";
+      records.forEach(day => {
+        if (day.is_today) {
+          html += `<tr style="background:#0f2027;"><td>${day.date}</td><td colspan="3">Today's Sessions</td><td>-</td></tr>`;
+          day.sessions.forEach(s => {
+            html += `<tr><td></td><td>${s.start?.split(" ")[1] || "-"}</td><td>${s.end ? s.end.split(" ")[1] : "-"}</td><td>${s.duration} hrs</td><td>Session</td></tr>`;
+            totalSessions++;
+            totalHours += parseFloat(s.duration);
+          });
+        } else {
+          html += `<tr><td>${day.date}</td><td>-</td><td>-</td><td>${day.total_hours} hrs</td><td>Completed</td></tr>`;
+          totalSessions++;
+          totalHours += parseFloat(day.total_hours);
         }
+      });
+      tbody.innerHTML = html;
+      const avg = totalSessions ? totalHours / totalSessions : 0;
+      document.getElementById("totalSessions").innerText = totalSessions;
+      document.getElementById("totalHours").innerText = totalHours.toFixed(2);
+      document.getElementById("avgHours").innerText = avg.toFixed(2);
+    } catch (err) {
+      console.error("Load history error:", err);
+    }
+  }
 
-        box.innerHTML =
-            `🕒 Last session: ${data.duration} hrs (${data.date} ${data.end_time})`;
-    });
-}
-function loadHistory() {
+  async function loadTodayHours() {
+    try {
+      const response = await fetch("/staff/today-hours/");
+      const data = await response.json();
+      document.getElementById("todayHours").innerText = (data.today_hours || 0).toFixed(2);
+    } catch (err) {
+      console.error("Load today hours error:", err);
+    }
+  }
 
-    fetch("/staff/history/")
-    .then(res => res.json())
-    .then(data => {
+  async function loadPerformance() {
+    try {
+      const response = await fetch("/staff/performance/");
+      const data = await response.json();
+      document.getElementById("performanceScore").innerText = (data.score || 0) + "%";
+    } catch (err) {
+      console.error("Load performance error:", err);
+    }
+  }
 
-        let records = data.data;
-        const tbody = document.getElementById("historyBody");
+  async function loadProfile() {
+    try {
+      const response = await fetch("/get-profile/");
+      const data = await response.json();
+      const staffNameSpan = document.getElementById("staffName");
+      if (staffNameSpan) staffNameSpan.innerText = `${data.name || "Staff"} (Staff)`;
+      const profileImg = document.getElementById("profileImage");
+      if (profileImg) {
+        profileImg.src = data.image || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        profileImg.onerror = () => {
+          profileImg.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        };
+      }
+    } catch (err) {
+      console.error("Load profile error:", err);
+    }
+  }
 
-        if (!records.length) {
-            tbody.innerHTML = `<tr><td colspan="5">No records</td></tr>`;
-            
-            document.getElementById("totalSessions").innerText = 0;
-            document.getElementById("totalHours").innerText = "0.0";
-            document.getElementById("avgHours").innerText = "0.0";
-            return;
-        }
+  // ----------------------------------------------
+  // PROFILE DROPDOWN & ACTIONS
+  // ----------------------------------------------
+  function viewProfile() {
+    fetch("/get-profile/").then(r => r.json()).then(d => {
+      alert(`👤 Name: ${d.name}\n📧 Email: ${d.email}\n🎂 Age: ${d.age || "Not set"}\n📏 Height: ${d.height || "Not set"} cm\n⚖ Weight: ${d.weight || "Not set"} kg\n🧠 BMI: ${d.bmi || "Not set"}`);
+    }).catch(err => console.error("View profile error:", err));
+  }
 
-        let html = "";
+  function editProfile() {
+    fetch("/get-profile/").then(r => r.json()).then(d => {
+      const age = prompt("Age:", d.age || "");
+      const height = prompt("Height (cm):", d.height || "");
+      const weight = prompt("Weight (kg):", d.weight || "");
+      fetch("/update-profile/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ age, height, weight })
+      }).then(r => r.json()).then(resp => {
+        if (resp.status === "success") alert(`✅ Updated\nBMI: ${resp.bmi}`);
+        else alert("Error updating profile");
+      }).catch(err => console.error("Edit profile error:", err));
+    }).catch(err => console.error("Edit profile fetch error:", err));
+  }
 
-let totalSessions = records.length;   // number of days
-let totalHours = 0;
+  function changeImage() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      const fd = new FormData();
+      fd.append("image", file);
+      fetch("/upload-avatar/", { method: "POST", body: fd })
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === "success") {
+            document.getElementById("profileImage").src = data.image_url;
+          } else {
+            alert("Upload failed");
+          }
+        })
+        .catch(err => console.error("Image upload error:", err));
+    };
+    input.click();
+  }
 
-records.forEach(day => {
+  // ----------------------------------------------
+  // CHAT FUNCTIONALITY
+  // ----------------------------------------------
+  async function loadMessages() {
+    try {
+      const response = await fetch("/staff/get-messages/");
+      const data = await response.json();
+      let html = "";
+      (data.messages || []).forEach(m => {
+        html += `<div><b>${m.user}</b>: ${m.msg} <small style="color:gray">${m.time}</small></div>`;
+      });
+      const chatBox = document.getElementById("chatBox");
+      if (chatBox) chatBox.innerHTML = html;
+    } catch (err) {
+      console.error("Load messages error:", err);
+    }
+  }
 
-    if (day.is_today) {
+  async function sendMessage() {
+    const msgInput = document.getElementById("chatInput");
+    const msg = msgInput?.value.trim();
+    if (!msg) return;
+    try {
+      await fetch("/staff/send-message/", {
+        method: "POST",
+        body: JSON.stringify({ message: msg })
+      });
+      msgInput.value = "";
+      await loadMessages();
+    } catch (err) {
+      console.error("Send message error:", err);
+    }
+  }
 
-        html += `
-            <tr style="background:#0f2027;color:#00b8a9;">
-                <td>${day.date}</td>
-                <td colspan="3">Today's Sessions</td>
-                <td>-</td>
-            </tr>
-        `;
-
-        day.sessions.forEach(s => {
-            html += `
-                <tr>
-                    <td></td>
-                    <td>${s.start.split(" ")[1]}</td>
-                    <td>${s.end ? s.end.split(" ")[1] : "-"}</td>
-                    <td>${s.duration} hrs</td>
-                    <td>Session</td>
-                </tr>
-            `;
+  // ----------------------------------------------
+  // CHART & FILTER / EXPORT
+  // ----------------------------------------------
+  function loadMonthlyGraph() {
+    fetch("/staff/monthly-analytics/")
+      .then(r => r.json())
+      .then(data => {
+        const ctx = document.getElementById("hoursChart")?.getContext("2d");
+        if (!ctx) return;
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: data.labels || [],
+            datasets: [{
+              label: "Monthly Hours",
+              data: data.data || [],
+              borderColor: "#00b8a9",
+              tension: 0.3,
+              fill: false
+            }]
+          },
+          options: { responsive: true, plugins: { legend: { labels: { color: "#fff" } } } }
         });
+      })
+      .catch(err => console.error("Load monthly graph error:", err));
+  }
 
-    } else {
+  async function applyFilter() {
+    const date = document.getElementById("filterDate").value;
+    const month = document.getElementById("filterMonth").value;
+    let url = "/staff/history/?" + (date ? "date=" + date : (month ? "month=" + month : ""));
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      const records = data.data || [];
+      const tbody = document.getElementById("historyBody");
+      if (!records.length) {
+        tbody.innerHTML = `<tr><td colspan="5">No records</td></tr>`;
+        return;
+      }
+      let html = "";
+      records.forEach(day => {
+        html += `<tr><td>${day.date}</td><td>-</td><td>-</td><td>${day.total_hours} hrs</td><td>Completed</td></tr>`;
+      });
+      tbody.innerHTML = html;
+    } catch (err) {
+      console.error("Apply filter error:", err);
+    }
+  }
 
-        html += `
-            <tr>
-                <td>${day.date}</td>
-                <td>-</td>
-                <td>-</td>
-                <td>${day.total_hours} hrs</td>
-                <td>Completed</td>
-            </tr>
-        `;
+  function exportData() {
+    window.open("/staff/export/", "_blank");
+  }
+
+  // ----------------------------------------------
+  // EVENT LISTENERS & INITIALIZATION
+  // ----------------------------------------------
+  function init() {
+    // Toggle button
+    const toggleBtn = document.getElementById("toggleStatusBtn");
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", () => {
+        if (currentSessionId) endSession();
+        else startSession();
+      });
     }
 
-});
-let avgHours = totalSessions ? (totalHours / totalSessions) : 0;
-
-// 🔥 UPDATE UI
-document.getElementById("totalSessions").innerText = totalSessions;
-document.getElementById("totalHours").innerText = totalHours.toFixed(2);
-document.getElementById("avgHours").innerText = avgHours.toFixed(2);
-
-tbody.innerHTML = html;
-
-        
+    // Profile dropdown
+    const profileImg = document.getElementById("profileImage");
+    const profileMenu = document.getElementById("profileMenu");
+    if (profileImg) {
+      profileImg.addEventListener("click", (e) => {
+        e.stopPropagation();
+        profileMenu.style.display = profileMenu.style.display === "block" ? "none" : "block";
+      });
+    }
+    document.addEventListener("click", () => {
+      if (profileMenu) profileMenu.style.display = "none";
     });
-}
-  // Event listeners
-  document.getElementById('toggleStatusBtn').addEventListener('click', toggleStatus);
 
-  document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-
-function sendMessage() {
-    let msg = document.getElementById("chatInput").value;
-
-    fetch("/staff/send-message/", {
-        method: "POST",
-        body: JSON.stringify({message: msg})
-    }).then(() => {
-        document.getElementById("chatInput").value = "";
-        loadMessages();
+    // Logout button
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) logoutBtn.addEventListener("click", () => {
+      fetch("/logout/", { method: "POST" }).then(() => window.location.href = "/");
     });
-}
 
-function loadMessages() {
-    fetch("/staff/get-messages/")
-    .then(res => res.json())
-    .then(data => {
+    // Filter & export
+    const filterBtn = document.querySelector("[onclick='applyFilter()']");
+    if (filterBtn) filterBtn.onclick = applyFilter;
+    const exportBtn = document.querySelector("[onclick='exportData()']");
+    if (exportBtn) exportBtn.onclick = exportData;
+    const sendChatBtn = document.querySelector(".chat-send-btn");
+    if (sendChatBtn) sendChatBtn.onclick = sendMessage;
+    const chatInput = document.getElementById("chatInput");
+    if (chatInput) chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
 
-        let html = "";
-        data.messages.forEach(m => {
-            html += `<div><b>${m.user}</b>: ${m.msg} <small>${m.time}</small></div>`;
-        });
-
-        document.getElementById("chatBox").innerHTML = html;
-    });
-}
-function loadMonthlyGraph() {
-
-    fetch("/staff/monthly-analytics/")
-    .then(res => res.json())
-    .then(data => {
-
-        const ctx = document.getElementById("hoursChart").getContext("2d");
-
-        new Chart(ctx, {
-            type: "line",
-            data: {
-                labels: data.labels,
-                datasets: [{
-                    label: "Monthly Hours",
-                    data: data.data,
-                    borderWidth: 2
-                }]
-            }
-        });
-    });
-}
-  function loadPerformance() {
-
-    fetch("/staff/performance/")
-    .then(res => res.json())
-    .then(data => {
-
-        document.getElementById("performanceScore").innerText =
-            data.score + "%";
-    });
-}
-  // 🔥 LOAD HISTORY ON PAGE LOAD
-window.onload = function() {
-    loadHistory();
+    // Load all data
     checkCurrentSession();
-    loadProfile();
+    loadHistory();
     loadTodayHours();
-   
-     loadLastSession();
-     loadMessages();
-setInterval(loadMessages, 3000);
-loadMonthlyGraph();
-loadPerformance();
-};
+    loadPerformance();
+    loadProfile();
+    loadMessages();
+    loadMonthlyGraph();
+    setInterval(loadMessages, 3000);
+  }
+
+  // Start everything when DOM is ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 </script>
 </body>
 </html>

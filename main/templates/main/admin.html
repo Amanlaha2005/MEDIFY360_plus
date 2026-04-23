@@ -219,19 +219,29 @@
         font-weight: 500;
       }
 
-      .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 28px;
-        flex-wrap: wrap;
-        gap: 16px;
-      }
-      .section-title {
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: var(--white);
-      }
+     .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .section-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--white);
+  }
+  /* Optional: keep input styling consistent */
+  #medSearch {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: rgba(0,0,0,0.1);
+    color: #fff;
+    width: 260px;
+  }
 
       /* Cards for citizens and doctors */
       .grid-cards {
@@ -686,6 +696,17 @@
     filter: invert(1) brightness(100%);
     cursor: pointer;
   }
+
+  .main-content {
+    overflow-x: hidden;
+}
+.billing-form-container,
+.data-table,
+.form-grid {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
     </style>
   </head>
 
@@ -879,31 +900,74 @@
         </div>
       </div>
     </div>
-    <div id="medicineModal" class="modal">
-    <div class="modal-content">
-        <h3>Add Medicine</h3>
-
-        <input type="hidden" id="medId">
-
-        <input id="medName" placeholder="Medicine name">
-        <input id="medQty" placeholder="Quantity">
-        <input id="medUnit" placeholder="Unit (strip, bottle)">
-        <input id="medMrp" placeholder="MRP (₹)">
-        <select id="medCategory"></select>
-
-        <input type="file" id="medImage">
-
-        <button class="btn-primary" onclick="saveMedicine()">Save</button>
+<!-- Medicine Modal (compact, no scrollbar) -->
+<div id="medicineModal" class="modal" style="position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.75); backdrop-filter: blur(6px); align-items: center; justify-content: center;">
+  <div class="modal-content" style="background: rgba(18,28,36,0.95); backdrop-filter: blur(10px); border-radius: 24px; max-width: 450px; width: 90%; padding: 20px 22px 24px; box-shadow: 0 20px 35px -10px rgba(0,0,0,0.5); border: 1px solid rgba(0,184,169,0.3); transition: all 0.2s ease; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #1e2a36;">
+      <h3 style="font-size: 1.4rem; font-weight: 600; background: linear-gradient(135deg, #fff, #b0e0e0); background-clip: text; -webkit-background-clip: text; color: transparent; margin: 0;">Add / Edit Medicine</h3>
+      <button class="close-modal" onclick="closeModal('medicineModal')" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #94a3b8; transition: color 0.2s;">&times;</button>
     </div>
+
+    <input type="hidden" id="medId">
+
+    <div class="form-group" style="margin-bottom: 12px;">
+      <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #cbd5e1; font-size: 0.8rem;">Medicine Name</label>
+      <input type="text" id="medName" placeholder="Enter medicine name" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid #2a3a44; border-radius: 12px; color: #fff; font-size: 0.85rem; outline: none; box-sizing: border-box;">
+    </div>
+
+    <div class="form-group" style="margin-bottom: 12px;">
+      <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #cbd5e1; font-size: 0.8rem;">Quantity</label>
+      <input type="number" id="medQty" placeholder="Available stock" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid #2a3a44; border-radius: 12px; color: #fff; font-size: 0.85rem; outline: none; box-sizing: border-box;">
+    </div>
+
+    <div class="form-group" style="margin-bottom: 12px;">
+      <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #cbd5e1; font-size: 0.8rem;">Unit</label>
+      <input type="text" id="medUnit" placeholder="strip, bottle, tablet" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid #2a3a44; border-radius: 12px; color: #fff; font-size: 0.85rem; outline: none; box-sizing: border-box;">
+    </div>
+
+    <div class="form-group" style="margin-bottom: 12px;">
+      <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #cbd5e1; font-size: 0.8rem;">MRP (₹)</label>
+      <input type="number" step="0.01" id="medMrp" placeholder="Price in rupees" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid #2a3a44; border-radius: 12px; color: #fff; font-size: 0.85rem; outline: none; box-sizing: border-box;">
+    </div>
+
+    <div class="form-group" style="margin-bottom: 12px; position: relative;">
+  <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #cbd5e1; font-size: 0.8rem;">Category</label>
+  <select id="medCategory" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid #2a3a44; border-radius: 12px; color: #fff; font-size: 0.85rem; outline: none; box-sizing: border-box; appearance: none; cursor: pointer;">
+    <option value="">Select Category</option>
+  </select>
+  <i class="fas fa-chevron-down" style="position: absolute; right: 14px; bottom: 12px; color: #00b8a9; font-size: 12px; pointer-events: none;"></i>
 </div>
-<div id="categoryModal" class="modal">
-    <div class="modal-content">
-        <h3>Add Category</h3>
 
-        <input id="catName" placeholder="Category name (Tablet, Syrup...)">
-
-        <button class="btn-primary" onclick="saveCategory()">Save</button>
+    <div class="form-group" style="margin-bottom: 16px;">
+      <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #cbd5e1; font-size: 0.8rem;">Medicine Image</label>
+      <input type="file" id="medImage" accept="image/*" style="width: 100%; padding: 6px 10px; background: rgba(0,0,0,0.3); border: 1px dashed #3a5a68; border-radius: 12px; color: #b0d4e0; font-size: 0.8rem; cursor: pointer; box-sizing: border-box;">
     </div>
+
+    <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; padding-top: 12px; border-top: 1px solid #1e2a36;">
+      <button class="btn-secondary" onclick="closeModal('medicineModal')" style="background: #64748b; color: #fff; padding: 6px 18px; border-radius: 30px; border: none; font-weight: 500; font-size: 0.8rem; cursor: pointer;">Cancel</button>
+      <button class="btn-primary" onclick="saveMedicine()" style="background: #00b8a9; color: #0a1219; padding: 6px 18px; border-radius: 30px; border: none; font-weight: 600; font-size: 0.8rem; cursor: pointer;">Save Medicine</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Modal (compact, no scrollbar) -->
+<div id="categoryModal" class="modal" style="position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.75); backdrop-filter: blur(6px); align-items: center; justify-content: center;">
+  <div class="modal-content" style="background: rgba(18,28,36,0.95); backdrop-filter: blur(10px); border-radius: 24px; max-width: 400px; width: 90%; padding: 20px 22px 24px; box-shadow: 0 20px 35px -10px rgba(0,0,0,0.5); border: 1px solid rgba(0,184,169,0.3); transition: all 0.2s ease;">
+    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #1e2a36;">
+      <h3 style="font-size: 1.4rem; font-weight: 600; background: linear-gradient(135deg, #fff, #b0e0e0); background-clip: text; -webkit-background-clip: text; color: transparent; margin: 0;">Add New Category</h3>
+      <button class="close-modal" onclick="closeModal('categoryModal')" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #94a3b8;">&times;</button>
+    </div>
+
+    <div class="form-group" style="margin-bottom: 20px;">
+      <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #cbd5e1; font-size: 0.8rem;">Category Name</label>
+      <input type="text" id="catName" placeholder="e.g., Tablet, Syrup, Capsule" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid #2a3a44; border-radius: 12px; color: #fff; font-size: 0.85rem; outline: none; box-sizing: border-box;">
+    </div>
+
+    <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; padding-top: 12px; border-top: 1px solid #1e2a36;">
+      <button class="btn-secondary" onclick="closeModal('categoryModal')" style="background: #64748b; color: #fff; padding: 6px 18px; border-radius: 30px; border: none; font-weight: 500; font-size: 0.8rem; cursor: pointer;">Cancel</button>
+      <button class="btn-primary" onclick="saveCategory()" style="background: #00b8a9; color: #0a1219; padding: 6px 18px; border-radius: 30px; border: none; font-weight: 600; font-size: 0.8rem; cursor: pointer;">Save Category</button>
+    </div>
+  </div>
 </div>
 
     <div id="slotModal" class="modal">
@@ -960,62 +1024,91 @@
         });
 
         let html = `
-        <div class="section-header">
-            <h2 class="section-title">Medicine Management</h2>
+        <h2 class="section-title">Medicine Management</h2>
 
-            <div style="display:flex; gap:10px;">
-                <input 
-                    id="medSearch" 
-                    placeholder="Search medicine / category..."
-                    onkeyup="filterMedicine()"
-                    style="padding:8px; border-radius:8px;"
-                >
+<div class="section-header">
+  <!-- Left side: search input with icon wrapper -->
+  <div style="position: relative; width: 260px;">
+    <!-- Search icon (Font Awesome) -->
+    <i class="fas fa-search" style="
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #8aaec0;
+      font-size: 0.85rem;
+      pointer-events: none;
+      z-index: 2;
+    "></i>
+    
+    <input 
+      id="medSearch" 
+      placeholder="Search medicine / category..."
+      onkeyup="filterMedicine()"
+      style="
+        padding: 8px 12px 8px 36px;
+        border-radius: 8px;
+        border: 1px solid #1e2a36;
+        background: rgba(0, 0, 0, 0.3);
+        color: #ffffff;
+        width: 100%;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        outline: none;
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+      "
+      onfocus="this.style.borderColor='#00b8a9'; this.style.boxShadow='0 0 0 3px rgba(0,184,169,0.2)'"
+      onblur="this.style.borderColor='#1e2a36'; this.style.boxShadow='none'"
+    >
+  </div>
 
-                <button class="btn-primary" onclick="openMedicineModal()">+ Add Medicine</button>
-                <button class="btn-secondary" onclick="openCategoryModal()">+ Add Category</button>
-            </div>
-        </div>
+  <!-- Right side: buttons -->
+  <div style="display: flex; gap: 10px;">
+    <button class="btn-primary" onclick="openMedicineModal()">+ Add Medicine</button>
+    <button class="btn-secondary" onclick="openCategoryModal()">+ Add Category</button>
+  </div>
+</div>
         `;
 
         // 🔥 LOOP CATEGORY
-        for (let category in grouped) {
+for (let category in grouped) {
+    let items = grouped[category];
 
-            let items = grouped[category];
+    html += `
+    <div style="margin-top: 50px;">
+        <!-- CATEGORY HEADER -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0;">${category}</h3>
+            ${items.length > 4 ? `<button onclick="viewAll('${category}')" 
+    style="background: rgba(0, 184, 169, 0.15); border: 1px solid rgba(0, 184, 169, 0.4); color: #00b8a9; padding: 6px 14px; border-radius: 20px; font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px;"
+    onmouseover="this.style.background='rgba(0, 184, 169, 0.25)'; this.style.borderColor='#00b8a9';"
+    onmouseout="this.style.background='rgba(0, 184, 169, 0.15)'; this.style.borderColor='rgba(0, 184, 169, 0.4)';">
+    <i class="fas fa-eye" style="font-size: 0.7rem;"></i> View All
+</button>` : ""}
+        </div>
 
-            html += `
-            <div style="margin-top:30px;">
-                
-                <!-- CATEGORY HEADER -->
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3>${category}</h3>
-                    ${items.length > 4 ? `<button onclick="viewAll('${category}')">View All</button>` : ""}
+        <!-- MEDICINE GRID - smaller card width -->
+        <div class="grid-cards" style="margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px;">
+            ${items.slice(0,4).map(m => `
+                <div class="doctor-card med-card" 
+                     data-name="${m.name.toLowerCase()}" 
+                     data-category="${m.category.toLowerCase()}"
+                     style="padding: 14px;">
+                    <img src="${m.image}" class="doctor-img" style="height: 140px; object-fit: contain; border-radius: 12px; margin-bottom: 10px;">
+                    <h3 style="font-size: 1rem; margin-bottom: 6px;">${m.name}</h3>
+                    <p style="font-size: 0.8rem; margin-bottom: 4px;">Stock: ${m.quantity} ${m.unit}</p>
+                    <p style="font-size: 0.8rem; margin-bottom: 4px;">Price: ₹${m.mrp}</p>
+                    <div style="gap: 6px; margin-top: 10px;">
+                        <button class="btn-warning" onclick="editMedicine(${m.id})" style="padding: 4px 10px; font-size: 0.7rem;">Edit</button>
+                        <button class="btn-danger" onclick="deleteMedicine(${m.id})" style="padding: 4px 10px; font-size: 0.7rem;">Delete</button>
+                    </div>
                 </div>
-
-                <!-- MEDICINE GRID -->
-                <div class="grid-cards">
-                    ${items.slice(0,4).map(m => `
-                        <div class="doctor-card med-card" 
-                             data-name="${m.name.toLowerCase()}" 
-                             data-category="${m.category.toLowerCase()}">
-
-                            <img src="${m.image}" class="doctor-img">
-
-                            <h3>${m.name}</h3>
-                            <p>Stock: ${m.quantity} ${m.unit}</p>
-<p>Price: ₹${m.mrp}</p>
-
-                            <div>
-                                <button class="btn-warning" onclick="editMedicine(${m.id})">Edit</button>
-                                <button class="btn-danger" onclick="deleteMedicine(${m.id})">Delete</button>
-                            </div>
-
-                        </div>
-                    `).join("")}
-                </div>
-
-            </div>
-            `;
-        }
+            `).join("")}
+        </div>
+    </div>
+    `;
+}
 
         document.getElementById("mainContent").innerHTML = html;
     });
@@ -1040,35 +1133,32 @@ function filterMedicine() {
 }
 
 function viewAll(categoryName) {
-
     fetch("/get-medicines/")
     .then(res => res.json())
     .then(data => {
-
         let items = data.medicines.filter(m => m.category === categoryName);
 
         let html = `
-        <h2>${categoryName} - All Medicines</h2>
-
-        <div class="grid-cards">
-            ${items.map(m => `
-                <div class="doctor-card">
-
-                    <img src="${m.image}" class="doctor-img">
-
-                    <h3>${m.name}</h3>
-                    <p>Stock: ${m.quantity} ${m.unit}</p>
-
-                    <div>
-                        <button onclick="editMedicine(${m.id})">Edit</button>
-                        <button onclick="deleteMedicine(${m.id})">Delete</button>
+            <div style="margin-bottom: 24px;">
+                <button onclick="loadMedicineSection()" style="background: rgba(0, 184, 169, 0.15); border: 1px solid rgba(0, 184, 169, 0.4); color: #00b8a9; padding: 8px 16px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-arrow-left"></i> Back to Categories
+                </button>
+            </div>
+            <h2 style="font-size: 1.6rem; font-weight: 700; color: var(--white); margin-bottom: 24px;">${categoryName} - All Medicines</h2>
+            <div class="grid-cards" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px;">
+                ${items.map(m => `
+                    <div class="doctor-card med-card" style="padding: 14px;">
+                        <img src="${m.image}" class="doctor-img" style="height: 140px; width: 100%; object-fit: contain; border-radius: 12px; margin-bottom: 10px; background: rgba(0,0,0,0.2);">
+                        <h3 style="font-size: 1rem; margin-bottom: 6px;">${m.name}</h3>
+                        <p style="font-size: 0.8rem; margin-bottom: 4px;">Stock: ${m.quantity} ${m.unit}</p>
+                        <p style="font-size: 0.8rem; margin-bottom: 4px;">Price: ₹${m.mrp}</p>
+                        <div style="gap: 6px; margin-top: 10px;">
+                            <button class="btn-warning" onclick="editMedicine(${m.id})" style="padding: 4px 10px; font-size: 0.7rem;">Edit</button>
+                            <button class="btn-danger" onclick="deleteMedicine(${m.id})" style="padding: 4px 10px; font-size: 0.7rem;">Delete</button>
+                        </div>
                     </div>
-
-                </div>
-            `).join("")}
-        </div>
-
-        <button onclick="loadMedicineSection()">⬅ Back</button>
+                `).join("")}
+            </div>
         `;
 
         document.getElementById("mainContent").innerHTML = html;
@@ -1107,21 +1197,33 @@ function editMedicine(id) {
 }
 function saveCategory() {
 
-    const name = document.getElementById("catName").value;
+    let name = document.getElementById("catName").value;
 
     fetch("/add-category/", {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken()
         },
-        body: JSON.stringify({ name: name })
+        body: JSON.stringify({ name })
     })
     .then(res => res.json())
-    .then(() => {
-        alert("Category added ✅");
-        closeModal("categoryModal");
+    .then(data => {
+
+        alert(data.message);   // 🔥 SHOW RESPONSE
+
+        if (data.status === "success") {
+            closeModal("categoryModal");
+            loadCategories(); // reload dropdown
+        }
     });
 }
+
+
+
+
+
+
       function openMedicineModal() {
 
     document.getElementById("medicineModal").classList.add("active");
@@ -1136,7 +1238,8 @@ function saveCategory() {
             `<option value="${c.id}">${c.name}</option>`
         ).join("");
     });
-}function saveMedicine() {
+}
+function saveMedicine() {
 
     let formData = new FormData();
 
@@ -2251,73 +2354,86 @@ function viewStaff(id) {
 
       // Doctors section with improved card spacing
       function renderDoctors() {
-        return `
-          <h2 class="section-title">Doctor Management</h2>
+  return `
+    <h2 class="section-title">Doctor Management</h2>
 
-          <div class="section-header" style="margin-top: 4%">
-            <input
-    type="text"
-    id="doctorSearch"
-    placeholder="Search doctors..."
-    oninput="filterDoctors()"
-    style="
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid #1e2a36;
-        border-radius: 12px;
-        padding: 10px 16px;
-        width: 300px;
-        color: #ffffff;
-        font-family: 'Inter', sans-serif;
-        font-size: 0.875rem;
-        outline: none;
-        transition: all 0.2s ease;
-    "
-    onfocus="this.style.borderColor='#00b8a9'; this.style.boxShadow='0 0 0 3px rgba(0,184,169,0.2)'"
-    onblur="this.style.borderColor='#1e2a36'; this.style.boxShadow='none'"
->
-              <div>
-                  <button class="btn-primary" onclick="openModal('doctorModal')">
-                      <i class="fas fa-plus"></i> Add Doctor
-                  </button>
-                  <button class="btn-secondary" onclick="openModal('timingModal')">
-                      <i class="fas fa-clock"></i> Set Timings
-                  </button>
-              </div>
+    <div class="section-header" style="margin-top: 4%">
+      <!-- SEARCH INPUT WITH ICON (inline wrapper) -->
+      <div style="position: relative; display: inline-block; width: 300px;">
+        <!-- Search Icon (Font Awesome) -->
+        <i class="fas fa-search" style="
+          position: absolute;
+          left: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #8aaec0;
+          font-size: 0.9rem;
+          pointer-events: none;
+          z-index: 2;
+        "></i>
+        
+        <input
+          type="text"
+          id="doctorSearch"
+          placeholder="Search doctors..."
+          oninput="filterDoctors()"
+          style="
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #1e2a36;
+            border-radius: 12px;
+            padding: 10px 16px 10px 42px;
+            width: 100%;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            outline: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+          "
+          onfocus="this.style.borderColor='#00b8a9'; this.style.boxShadow='0 0 0 3px rgba(0,184,169,0.2)'"
+          onblur="this.style.borderColor='#1e2a36'; this.style.boxShadow='none'"
+        >
+      </div>
+
+      <div>
+        <button class="btn-primary" onclick="openModal('doctorModal')">
+          <i class="fas fa-plus"></i> Add Doctor
+        </button>
+        <button class="btn-secondary" onclick="openModal('timingModal')">
+          <i class="fas fa-clock"></i> Set Timings
+        </button>
+      </div>
+    </div>
+
+    <!-- Doctor Cards -->
+    <div class="grid-cards" id="doctorList">
+      ${doctors
+        .map(
+          (doc) => `
+          <div class="doctor-card">
+            <img
+              src="${doc.image ? doc.image : "/static/assets/default.png"}"
+              class="doctor-img"
+            >
+            <h3><i class="fas fa-user-md"></i> ${doc.name}</h3>
+            <p><i class="fas fa-stethoscope"></i> ${doc.specialty} | ${doc.experience} yrs exp</p>
+            <p><i class="fas fa-phone"></i> ${doc.phone}</p>
+            <p><i class="fas fa-calendar-alt"></i> Timings: Managed by Admin</p>
+            <div>
+              <button class="btn-primary" onclick="editDoctor(${doc.id})">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="btn-danger" onclick="deleteDoctor(${doc.id})">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
           </div>
-
-          <!-- Doctor Cards -->
-          <div class="grid-cards" id="doctorList">
-              ${doctors
-                .map(
-                  (doc) => `
-                  <div class="doctor-card">
-                   <img
-        src="${doc.image ? doc.image : "/static/assets/default.png"}"
-        class="doctor-img"
-      >
-                      <h3><i class="fas fa-user-md"></i> ${doc.name}</h3>
-                      <p><i class="fas fa-stethoscope"></i> ${doc.specialty} | ${doc.experience} yrs exp</p>
-                      <p><i class="fas fa-phone"></i> ${doc.phone}</p>
-                      <p><i class="fas fa-calendar-alt"></i> Timings: Managed by Admin</p>
-
-                      <div>
-                          <button class="btn-primary" onclick="editDoctor(${doc.id})">
-                              <i class="fas fa-edit"></i> Edit
-                          </button>
-                          <button class="btn-danger" onclick="deleteDoctor(${doc.id})">
-                              <i class="fas fa-trash"></i> Delete
-                          </button>
-                      </div>
-                  </div>
-              `,
-                )
-                .join("")}
-          </div>
-
-          <!-- 🔥 Timing Table (Dynamic from Backend) -->
-
-          `;
-      }
+        `,
+        )
+        .join("")}
+    </div>
+  `;
+}
 
       function filterDoctors() {
         let query = document.getElementById("doctorSearch").value.toLowerCase();

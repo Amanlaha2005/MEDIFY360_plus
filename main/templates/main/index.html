@@ -1524,7 +1524,7 @@
       </div>
 
       <ul class="nav-links">
-        <li><a class="active" href="#">Home</a></li>
+        <li><a class="active" href="#home">Home</a></li>
         <li><a href="#about">About</a></li>
         <li><a href="#services">Services</a></li>
         <li><a href="#contact">Contact Us</a></li>
@@ -1553,7 +1553,7 @@
     </nav>
 
     <!-- ═══ HERO ═══════════════════════════════════════════════════════ -->
-    <section class="hero">
+    <section class="hero" id="home">
       <div class="hero-inner">
         <div class="hero-badge"><span></span>Smart Healthcare Platform</div>
         <h1>Healthcare Reimagined for <em>Every Citizen</em></h1>
@@ -1590,6 +1590,63 @@
         </div>
       </div>
     </section>
+    
+    <script>
+  (function() {
+    function parseStatValue(text) {
+      let raw = text.trim();
+      let num = parseFloat(raw);
+      if (!isNaN(num)) return num;
+      if (raw.toUpperCase().includes('K')) {
+        let val = parseFloat(raw);
+        return isNaN(val) ? 0 : val * 1000;
+      }
+      return 0;
+    }
+
+    function animateStat(element, target, duration = 2000) {
+      let start = 0;
+      let startTime = null;
+      let isDecimal = target % 1 !== 0;
+
+      function update(currentTime) {
+        if (!startTime) startTime = currentTime;
+        const elapsed = currentTime - startTime;
+        let progress = Math.min(1, elapsed / duration);
+        let currentValue = progress * target;
+        if (!isDecimal) {
+          currentValue = Math.floor(currentValue);
+        } else {
+          currentValue = currentValue.toFixed(1);
+        }
+        element.textContent = currentValue;
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        } else {
+          element.textContent = target + (target % 1 === 0 ? '' : '') + '+';
+        }
+      }
+      requestAnimationFrame(update);
+    }
+
+    const stats = document.querySelectorAll('.stat-num');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const originalText = el.textContent;
+          const target = parseStatValue(originalText);
+          if (target > 0) {
+            animateStat(el, target);
+          }
+          observer.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    stats.forEach(stat => observer.observe(stat));
+  })();
+</script>
 
     <!-- ═══ ABOUT ══════════════════════════════════════════════════════ -->
     <section class="about" id="about">
@@ -1652,42 +1709,42 @@
       </div>
 
       <div class="service-grid">
-        <div class="service-card">
-          <div class="service-icon">
-            <ion-icon name="business-outline"></ion-icon>
-          </div>
-          <h3>Hospital Management</h3>
-          <p>
-            Manage patient records, appointments, staff, reports and departments
-            from one dashboard.
-          </p>
-          <a href="#">Explore Service →</a>
-        </div>
+  <div class="service-card">
+    <div class="service-icon">
+      <ion-icon name="business-outline"></ion-icon>
+    </div>
+    <h3>Pharmacy Management</h3>
+    <p>
+      Manage patient records, appointments, staff, reports and departments
+      from one dashboard.
+    </p>
+    <a href="#" onclick="openModal('Admin', 'login'); return false;">Explore Service →</a>
+  </div>
 
-        <div class="service-card">
-          <div class="service-icon">
-            <ion-icon name="car-outline"></ion-icon>
-          </div>
-          <h3>Ambulance Tracking</h3>
-          <p>
-            Track ambulances live, monitor ETA and instantly dispatch emergency
-            response units.
-          </p>
-          <a href="#">Explore Service →</a>
-        </div>
+  <div class="service-card">
+    <div class="service-icon">
+      <ion-icon name="car-outline"></ion-icon>
+    </div>
+    <h3>Ambulance Tracking</h3>
+    <p>
+      Track ambulances live, monitor ETA and instantly dispatch emergency
+      response units.
+    </p>
+    <a href="#" onclick="openModal('Citizen', 'login'); return false;">Explore Service →</a>
+  </div>
 
-        <div class="service-card">
-          <div class="service-icon">
-            <ion-icon name="heart-outline"></ion-icon>
-          </div>
-          <h3>Mental Health AI</h3>
-          <p>
-            Provide 24/7 AI-guided mental wellness support, self-check tools and
-            counsellor access.
-          </p>
-          <a href="#">Explore Service →</a>
-        </div>
-      </div>
+  <div class="service-card">
+    <div class="service-icon">
+      <ion-icon name="heart-outline"></ion-icon>
+    </div>
+    <h3>Mental Health AI</h3>
+    <p>
+      Provide 24/7 AI-guided mental wellness support, self-check tools and
+      counsellor access.
+    </p>
+    <a href="#" onclick="openChat(); return false;">Explore Service →</a>
+  </div>
+</div>
     </section>
 
     <!-- ═══ FEATURES SECTION ═══════════════════════════════════════════ -->
@@ -1811,15 +1868,20 @@
           </div>
         </div>
 
-        <form class="contact-form">
-          <div class="form-row">
-            <input type="text" placeholder="Your Name" required />
-            <input type="email" placeholder="Your Email" required />
-          </div>
-          <input type="text" placeholder="Subject" required />
-          <textarea rows="5" placeholder="Write your message..."></textarea>
-          <button type="submit" class="btn-primary">Send Message</button>
-        </form>
+        <form class="contact-form" id="contactForm">
+
+  <div class="form-row">
+    <input type="text" name="name" placeholder="Your Name" required />
+    <input type="email" name="email" placeholder="Your Email" required />
+  </div>
+
+  <input type="text" name="subject" placeholder="Subject" required />
+
+  <textarea name="message" rows="5" placeholder="Write your message..." required></textarea>
+
+  <button type="submit" class="btn-primary">Send Message</button>
+
+</form>
       </div>
     </section>
 
@@ -1852,7 +1914,7 @@
 
           <div>
             <h4>Services</h4>
-            <a href="#">Hospital Management</a>
+            <a href="#">Pharmacy Management</a>
             <a href="#">Ambulance Tracking</a>
             <a href="#">Mental Health AI</a>
           </div>
@@ -2302,7 +2364,28 @@
           document.getElementById("registerModal").classList.add("active");
         }
       }
+      document.getElementById("contactForm").addEventListener("submit", function(e) {
+    e.preventDefault();
 
+    const formData = new FormData(this);
+
+    fetch("/contact/", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("✅ Message sent successfully");
+            document.getElementById("contactForm").reset();
+        } else {
+            alert("❌ Failed to send message");
+        }
+    })
+    .catch(() => {
+        alert("❌ Server error");
+    });
+});
       function switchModal(target) {
         allModals.forEach((id) =>
           document.getElementById(id).classList.remove("active"),
@@ -2658,6 +2741,55 @@
       chatInput.addEventListener("keypress", (e) => {
         if (e.key === "Enter") sendChatMessage();
       });
+    </script>
+
+    <script>
+      // Active nav link on scroll
+function setActiveOnScroll() {
+  const homeLink = document.querySelector('a[href="#home"]');
+  const aboutLink = document.querySelector('a[href="#about"]');
+  const servicesLink = document.querySelector('a[href="#services"]');
+  const contactLink = document.querySelector('a[href="#contact"]');
+
+  const homeSection = document.getElementById('home');
+  const aboutSection = document.getElementById('about');
+  const servicesSection = document.getElementById('services');
+  const contactSection = document.getElementById('contact');
+
+  const scrollPos = window.scrollY + 100; // offset for fixed navbar
+
+  // Determine which section is active
+  let activeLink = null;
+
+  if (homeSection && scrollPos >= homeSection.offsetTop && scrollPos < aboutSection.offsetTop) {
+    activeLink = homeLink;
+  }
+  else if (aboutSection && scrollPos >= aboutSection.offsetTop && scrollPos < servicesSection.offsetTop) {
+    activeLink = aboutLink;
+  }
+  else if (servicesSection && scrollPos >= servicesSection.offsetTop && scrollPos < contactSection.offsetTop) {
+    // This covers Services, Features, and How It Works (all between Services and Contact)
+    activeLink = servicesLink;
+  }
+  else if (contactSection && scrollPos >= contactSection.offsetTop) {
+    activeLink = contactLink;
+  }
+
+  // Update active class
+  [homeLink, aboutLink, servicesLink, contactLink].forEach(link => {
+    if (link) {
+      if (link === activeLink) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    }
+  });
+}
+
+// Run on scroll and on load
+window.addEventListener('scroll', setActiveOnScroll);
+window.addEventListener('load', setActiveOnScroll);
     </script>
 
     <script
