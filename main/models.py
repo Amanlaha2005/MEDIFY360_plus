@@ -29,6 +29,7 @@ class Profile(models.Model):
     weight = models.FloatField(null=True, blank=True)
     bmi = models.FloatField(null=True, blank=True)
     family_phone = models.CharField(max_length=15, blank=True, null=True)
+    coins = models.IntegerField(default=0)
     
     def __str__(self):
         return f"{self.user.username} - {self.role}"
@@ -246,3 +247,25 @@ class OrderItem(models.Model):
     medicine = models.ForeignKey(Medicine, on_delete=models.CASCADE)
     quantity = models.IntegerField()
     price = models.FloatField()
+
+class CoinClaim(models.Model):
+    CLAIM_TYPES = (
+        ('BMI', 'BMI Improvement'),
+        ('DOCTOR', 'Doctor Visit'),
+        ('RISK', 'Risk Reduction'),
+        ('PROFILE', 'Profile Completion'),
+    )
+    STATUS_CHOICES = (
+        ('PENDING', 'Pending'),
+        ('CLAIMED', 'Claimed'),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    claim_type = models.CharField(max_length=20, choices=CLAIM_TYPES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'claim_type')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.claim_type} ({self.status})"

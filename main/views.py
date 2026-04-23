@@ -1830,6 +1830,7 @@ def add_to_cart(request):
     cart.save()
 
     return JsonResponse({"status": "added"})
+from .models import CoinClaim
 def get_address(request):
     addresses = Address.objects.filter(user=request.user)
 
@@ -1863,9 +1864,15 @@ def get_cart(request):
             "subtotal": subtotal
         })
 
+    profile = Profile.objects.get(user=request.user)
+    claims = CoinClaim.objects.filter(user=request.user)
+    claim_map = {c.claim_type: c.status for c in claims}
+
     return JsonResponse({
         "items": data,
-        "total": total
+        "total": total,
+        "coins": profile.coins,
+        "claims": claim_map
     })
     
 @csrf_exempt
@@ -1901,44 +1908,167 @@ def save_address(request):
     return JsonResponse({"id": addr.id})
 
 @csrf_exempt
+@login_required
 def place_order(request):
-    data = json.loads(request.body)
 
-    address_id = data.get("address_id")
+    if request.method == "POST":
+        data = json.loads(request.body)
 
-    cart_items = Cart.objects.filter(user=request.user)
+        address_id = data.get("address_id")
 
-    total = 0
-    for i in cart_items:
-        total += i.quantity * i.medicine.mrp
+        address = Address.objects.get(id=address_id, user=request.user)
 
-    order = Order.objects.create(
-        user=request.user,
-        address_id=address_id,
-        total=total
-    )
+        cart_items = Cart.objects.filter(user=request.user)
 
-    for i in cart_items:
-        OrderItem.objects.create(
-            order=order,
-            medicine=i.medicine,
-            quantity=i.quantity,
-            price=i.medicine.mrp
+        if not cart_items.exists():
+            return JsonResponse({"error": "Cart empty"})
+
+        subtotal = 0
+
+        # 🔥 CHECK STOCK + CALCULATE
+        for item in cart_items:
+            if item.quantity > item.medicine.quantity:
+                return JsonResponse({
+                    "error": f"{item.medicine.name} out of stock ❌"
+                })
+
+            subtotal += item.quantity * item.medicine.mrp
+
+        # 🔥 APPLY 10% BASE DISCOUNT
+        discount = subtotal * 0.10
+        
+        # 🔥 COIN DISCOUNT (EXTRA 5% IF COINS >= 500)
+        profile = Profile.objects.get(user=request.user)
+        coin_discount = 0
+        if profile.coins >= 500:
+            coin_discount = subtotal * 0.05
+            
+        total = subtotal - discount - coin_discount
+
+        # 🔥 CREATE ORDER
+        order = Order.objects.create(
+            user=request.user,
+            address=address,
+            total=round(total, 2),
+            status="pending"
         )
 
-    cart_items.delete()
+        # 🔥 SAVE ITEMS + REDUCE STOCK
+        for item in cart_items:
 
-    return JsonResponse({"status": "order placed"})
+            OrderItem.objects.create(
+                order=order,
+                medicine=item.medicine,
+                quantity=item.quantity,
+                price=item.medicine.mrp
+            )
+
+            # 🔥 STOCK REDUCTION (IMPORTANT)
+            item.medicine.quantity -= item.quantity
+            item.medicine.save()
+
+        # 🔥 CLEAR CART
+        cart_items.delete()
+
+        return JsonResponse({
+            "status": "success",
+            "subtotal": subtotal,
+            "discount": round(discount + coin_discount, 2),
+            "total": round(total, 2),
+            "coin_discount": round(coin_discount, 2)
+        })
+
+
+
 
 def get_orders(request):
-    orders = Order.objects.filter(user=request.user)
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
 
     data = []
     for o in orders:
+        items = OrderItem.objects.filter(order=o)
+        item_list = []
+        for i in items:
+            item_list.append({
+                "name": i.medicine.name,
+                "qty": i.quantity,
+                "price": float(i.price),
+                "subtotal": float(i.quantity * i.price)
+            })
+            
         data.append({
             "id": o.id,
             "status": o.status,
-            "total": o.total
+            "total": float(o.total),
+            "date": o.created_at.strftime("%d %b %Y, %H:%M"),
+            "items": item_list
         })
 
     return JsonResponse({"orders": data})
+
+def admin_get_orders(request):
+    orders = Order.objects.all().order_by('-created_at')
+    
+    data = []
+    for o in orders:
+        items = OrderItem.objects.filter(order=o)
+        item_data = [{"name": i.medicine.name, "quantity": i.quantity, "price": i.price} for i in items]
+        
+        data.append({
+            "id": o.id,
+            "status": o.status,
+            "total": o.total,
+            "created_at": o.created_at.strftime("%Y-%m-%d %H:%M"),
+            "client_name": o.address.name,
+            "client_phone": o.address.phone,
+            "client_address": f"{o.address.full_address}, {o.address.city} - {o.address.pincode}",
+            "items": item_data
+        })
+        
+    return JsonResponse({"orders": data})
+
+@csrf_exempt
+def admin_update_order_status(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        order_id = data.get("order_id")
+        status = data.get("status")
+        
+        try:
+            order = Order.objects.get(id=order_id)
+            if status in ["ongoing", "delivered"]:
+                order.status = status
+                order.save()
+                return JsonResponse({"status": "success"})
+            return JsonResponse({"status": "error", "message": "Invalid status"})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)})
+    return JsonResponse({"status": "error"})
+
+@csrf_exempt
+@login_required
+def claim_coins(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        claim_type = data.get("type")
+        
+        existing = CoinClaim.objects.filter(user=request.user, claim_type=claim_type).first()
+        if existing:
+            return JsonResponse({"error": f"Already {existing.status}"})
+            
+        if claim_type == "PROFILE":
+            profile = Profile.objects.get(user=request.user)
+            # Check if details are provided
+            if not profile.age or not profile.height or not profile.weight:
+                return JsonResponse({"error": "Please complete your profile details (Age, Height, Weight) first! 📋"})
+            
+            # Immediate claim
+            CoinClaim.objects.create(user=request.user, claim_type=claim_type, status='CLAIMED')
+            profile.coins += 30
+            profile.save()
+            return JsonResponse({"status": "CLAIMED", "coins": profile.coins})
+        else:
+            # BMI, DOCTOR, RISK go to pending for admin review
+            CoinClaim.objects.create(user=request.user, claim_type=claim_type, status='PENDING')
+            return JsonResponse({"status": "PENDING"})
+    return JsonResponse({"error": "Invalid request"})

@@ -1001,9 +1001,12 @@
         <!-- Monthly BMI Progress Card with improved button -->
         <div class="fitness-progress-card">
             <div class="bmi-header">
-                <div><h3>📊 Monthly BMI Progress</h3><p style="color: var(--text-muted); font-size: 0.85rem;">Track your body mass index over time</p></div>
-                <button onclick="openFitness()" class="analysis-btn">Full Analysis →</button>
-            </div>
+    <h3>📊 Monthly BMI Progress</h3>
+
+    <button class="analysis-btn" id="fullAnalysisBtn">
+        Full Analysis →
+    </button>
+</div>
             <div id="bmiImprovementBox" style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
                 <div id="bmiTrendText">Loading trend...</div>
                 <canvas id="miniBmiChart" width="300" height="80" style="max-width: 100%; height: auto; background: rgba(0,0,0,0.2); border-radius: 16px;"></canvas>
@@ -1361,6 +1364,9 @@
             document.getElementById("bmiStatValue").innerText = data.bmi;
             loadProfile();
             closeModal("profileModal");
+            if (age && height && weight) {
+                alert("Profile Updated ✅. You can now claim 30 Coins in the Store > Rewards section!");
+            }
             if (document.getElementById("profileViewModal").classList.contains("active")) openProfileViewModal();
         });
     };
@@ -1516,14 +1522,21 @@ function confirmOrder() {
         });
     }
     window.loadBMIGraphFull = loadBMIGraphFull;
+
+document.getElementById("fullAnalysisBtn").addEventListener("click", function () {
+    document.getElementById("fitnessModal").classList.add("active");
+});
 </script>
 
 <div id="fitnessPage" class="fitness-modal-overlay">
     <div class="fitness-container">
-        <div class="fitness-header">
-            <h1><ion-icon name="fitness-outline"></ion-icon> Health & Fitness Core</h1>
-            <button onclick="closeFitness()" class="fitness-close"><ion-icon name="arrow-back-outline"></ion-icon> Return to Dashboard</button>
-        </div>
+        <<div class="fitness-header">
+    <h1>📊 Full Health Analysis</h1>
+
+    <button class="fitness-close" onclick="closeFitness()">
+        Close ✖
+    </button>
+</div>
         
         <div class="fitness-grid-top">
             <div class="fitness-card-premium">

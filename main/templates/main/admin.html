@@ -722,16 +722,17 @@
               <i class="fas fa-user"></i><span>Staff</span>
             </div>
 
-            <div class="nav-item" data-section="driver">
-              <i class="fas fa-car"></i><span>Driver</span>
-            </div>
+
 
             <div class="nav-item" data-section="billing">
               <i class="fas fa-file-invoice-dollar"></i><span>OPD Billing</span>
             </div>
             <div class="nav-item" data-section="medicine">
-    <i class="fas fa-capsules"></i><span>Medicine</span>
-</div>
+              <i class="fas fa-capsules"></i><span>Medicine</span>
+            </div>
+            <div class="nav-item" data-section="orders">
+              <i class="fas fa-shopping-cart"></i><span>Orders</span>
+            </div>
           </div>
         </div>
         <div class="sidebar-footer">
@@ -904,47 +905,7 @@
         <button class="btn-primary" onclick="saveCategory()">Save</button>
     </div>
 </div>
-    <div id="driverModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Verify Driver License</h3>
-          <button class="close-modal" onclick="closeModal('driverModal')">
-            &times;
-          </button>
-        </div>
-        <input type="hidden" id="driverIdx" />
-        <div class="form-group">
-          <label>Driver</label>
-          <p
-            id="driverNameDisplay"
-            style="
-              padding: 10px;
-              background: var(--gray-50);
-              border-radius: 8px;
-            "
-          ></p>
-        </div>
-        <div class="form-group">
-          <label>License Number</label
-          ><input type="text" id="licenseNumber" placeholder="DL987654321" />
-        </div>
-        <div class="form-group">
-          <label>ID Proof (Aadhar/Passport)</label
-          ><input
-            type="text"
-            id="idProof"
-            placeholder="Aadhar: XXXX-XXXX-XXXX"
-          />
-        </div>
-        <div class="modal-footer">
-          <button class="btn-secondary" onclick="closeModal('driverModal')">
-            Cancel</button
-          ><button class="btn-primary" onclick="verifyDriver()">
-            Verify & Approve
-          </button>
-        </div>
-      </div>
-    </div>
+
     <div id="slotModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -1203,6 +1164,343 @@ function deleteMedicine(id) {
     fetch(`/delete-medicine/${id}/`, { method: "POST" })
     .then(() => loadMedicineSection());
 }
+
+function loadOrders() {
+    fetch("/admin-get-orders/")
+        .then(res => res.json())
+        .then(data => {
+            let orders = data.orders;
+            
+            let ongoing = orders.filter(o => o.status !== 'delivered');
+            let history = orders.filter(o => o.status === 'delivered');
+
+            let ongoingHtml = ongoing.length > 0 ? ongoing.map(o => `
+                <div class="stat-card" style="margin-bottom: 20px; background: rgba(17, 33, 46, 0.8); border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                        <div style="flex: 1; min-width: 300px;">
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                                <h3 style="color: var(--accent); font-size: 1.4rem;">Order #${o.id}</h3>
+                                <span style="background: ${o.status === 'pending' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(0, 184, 169, 0.2)'}; color: ${o.status === 'pending' ? 'var(--warning)' : 'var(--accent)'}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; border: 1px solid ${o.status === 'pending' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(0, 184, 169, 0.3)'};">${o.status}</span>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px;">
+                                    <p style="color: var(--gray-400); font-size: 0.8rem; margin-bottom: 4px;"><i class="fas fa-user" style="margin-right: 5px;"></i> CLIENT DETAILS</p>
+                                    <p style="color: var(--white); font-weight: 600;">${o.client_name}</p>
+                                    <p style="color: var(--gray-300); font-size: 0.9rem;">${o.client_phone}</p>
+                                </div>
+                                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px;">
+                                    <p style="color: var(--gray-400); font-size: 0.8rem; margin-bottom: 4px;"><i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i> ADDRESS</p>
+                                    <p style="color: var(--gray-200); font-size: 0.9rem; line-height: 1.4;">${o.client_address}</p>
+                                </div>
+                            </div>
+
+                            <p style="color: var(--gray-400); font-size: 0.8rem; margin-bottom: 10px; font-weight: 600; letter-spacing: 1px;">ORDER ITEMS</p>
+                            <div style="background: rgba(0,0,0,0.15); border-radius: 12px; padding: 10px; margin-bottom: 15px;">
+                                ${o.items.map(i => `
+                                    <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                        <span style="color: var(--gray-200);">${i.name} <small style="color: var(--gray-500);">x${i.quantity}</small></span>
+                                        <span style="color: var(--white); font-weight: 500;">₹${i.price * i.quantity}</span>
+                                    </div>
+                                `).join('')}
+                                <div style="display: flex; justify-content: space-between; padding-top: 10px; margin-top: 5px;">
+                                    <span style="color: var(--white); font-weight: 700;">Order Total</span>
+                                    <span style="color: var(--accent); font-weight: 700; font-size: 1.1rem;">₹${o.total}</span>
+                                </div>
+                            </div>
+                            <p style="color: var(--gray-500); font-size: 0.75rem;"><i class="far fa-clock" style="margin-right: 5px;"></i> Ordered at: ${o.created_at}</p>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 180px;">
+                            ${o.status === 'pending' ? `
+                                <button class="btn-primary" style="width: 100%; padding: 12px; justify-content: center;" onclick="updateOrderStatus(${o.id}, 'ongoing')">
+                                    <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> Process Order
+                                </button>
+                            ` : ''}
+                            <button class="btn-success" style="width: 100%; padding: 12px; justify-content: center; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981;" onclick="updateOrderStatus(${o.id}, 'delivered')">
+                                <i class="fas fa-check-circle" style="margin-right: 8px;"></i> Mark Delivered
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('') : '<div style="text-align: center; padding: 40px; background: rgba(0,0,0,0.1); border-radius: 20px; border: 2px dashed rgba(255,255,255,0.05);"><i class="fas fa-box-open" style="font-size: 3rem; color: var(--gray-600); margin-bottom: 15px; display: block;"></i><p style="color: var(--gray-400);">No ongoing orders at the moment.</p></div>';
+
+            let historyHtml = history.length > 0 ? history.map(o => `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;" class="history-row" data-client="${o.client_name.toLowerCase()}" data-id="${o.id}">
+                    <td style="padding: 18px 15px; color: var(--gray-400); font-family: monospace;">#${o.id}</td>
+                    <td style="padding: 18px 15px;">
+                        <div style="font-weight: 600; color: var(--white);">${o.client_name}</div>
+                        <div style="font-size: 0.8rem; color: var(--gray-400);">${o.client_phone}</div>
+                    </td>
+                    <td style="padding: 18px 15px; color: var(--gray-200); font-size: 0.9rem;">${o.client_address.substring(0, 30)}...</td>
+                    <td style="padding: 18px 15px; color: var(--accent); font-weight: 700;">₹${o.total}</td>
+                    <td style="padding: 18px 15px; color: var(--gray-300); font-size: 0.85rem;">${o.created_at}</td>
+                    <td style="padding: 18px 15px;"><span style="color: var(--success); font-weight: 600; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;"><i class="fas fa-check-circle"></i> DELIVERED</span></td>
+                </tr>
+            `).join('') : '<tr><td colspan="6" style="padding: 40px; text-align: center; color: var(--gray-500);"><i class="fas fa-history" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i> No order history found.</td></tr>';
+
+            let html = `
+                <div class="section-header" style="margin-bottom: 40px;">
+                    <div>
+                        <h2 class="section-title">Client Orders</h2>
+                        <p style="color: var(--gray-400); font-size: 0.9rem; margin-top: 5px;">Manage ongoing client orders and view transaction history.</p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 60px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(0, 184, 169, 0.1); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-truck-loading" style="color: var(--accent);"></i>
+                        </div>
+                        <h3 style="color: var(--white); font-size: 1.3rem;">Ongoing Orders</h3>
+                        <span style="background: var(--accent); color: var(--navy); padding: 2px 10px; border-radius: 10px; font-size: 0.8rem; font-weight: 800;">${ongoing.length}</span>
+                    </div>
+                    <div id="ongoingOrdersContainer" style="display: grid; gap: 20px;">
+                        ${ongoingHtml}
+                    </div>
+                </div>
+
+                <div style="background: rgba(17, 33, 46, 0.4); border-radius: 24px; padding: 30px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(0, 184, 169, 0.1); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-history" style="color: var(--accent);"></i>
+                            </div>
+                            <h3 style="color: var(--white); font-size: 1.3rem;">Order History</h3>
+                        </div>
+                        <div style="position: relative; flex: 1; max-width: 400px;">
+                            <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--gray-500);"></i>
+                            <input type="text" id="orderSearch" placeholder="Search by client name or order ID..." 
+                                style="padding: 14px 15px 14px 48px; border-radius: 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); color: white; width: 100%; font-size: 0.9rem;"
+                                onkeyup="filterOrderHistory()">
+                        </div>
+                    </div>
+                    <div class="data-table" style="background: transparent; border: none; overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: rgba(0,0,0,0.2);">
+                                    <th style="padding: 15px; text-align: left; color: var(--gray-400); font-weight: 600; font-size: 0.8rem; letter-spacing: 1px;">ORDER ID</th>
+                                    <th style="padding: 15px; text-align: left; color: var(--gray-400); font-weight: 600; font-size: 0.8rem; letter-spacing: 1px;">CLIENT</th>
+                                    <th style="padding: 15px; text-align: left; color: var(--gray-400); font-weight: 600; font-size: 0.8rem; letter-spacing: 1px;">DELIVERY ADDRESS</th>
+                                    <th style="padding: 15px; text-align: left; color: var(--gray-400); font-weight: 600; font-size: 0.8rem; letter-spacing: 1px;">AMOUNT</th>
+                                    <th style="padding: 15px; text-align: left; color: var(--gray-400); font-weight: 600; font-size: 0.8rem; letter-spacing: 1px;">DATE</th>
+                                    <th style="padding: 15px; text-align: left; color: var(--gray-400); font-weight: 600; font-size: 0.8rem; letter-spacing: 1px;">STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderHistoryBody">
+                                ${historyHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            document.getElementById("mainContent").innerHTML = html;
+        });
+}
+function updateStatus(id, status) {
+
+    fetch("/update-order-status/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            order_id: id,
+            status: status
+        })
+    })
+    .then(() => loadOrders());
+}
+function updateOrderStatus(orderId, status) {
+    fetch("/admin-update-order-status/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: orderId, status: status })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            loadOrders();
+        } else {
+            alert("Error updating order: " + data.message);
+        }
+    });
+}
+
+function filterOrderHistory() {
+    let val = document.getElementById("orderSearch").value.toLowerCase();
+    document.querySelectorAll(".history-row").forEach(row => {
+        let name = row.dataset.client;
+        let id = row.dataset.id;
+        if (name.includes(val) || id.includes(val)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+}
+
+function loadOrders() {
+    fetch("/admin-get-orders/")
+        .then(res => res.json())
+        .then(data => {
+            let orders = data.orders;
+            
+            let ongoing = orders.filter(o => o.status !== 'delivered');
+            let history = orders.filter(o => o.status === 'delivered');
+
+            let ongoingHtml = ongoing.length > 0 ? ongoing.map(o => `
+                <div class="stat-card" style="margin-bottom: 20px; background: rgba(17, 33, 46, 0.8); border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                        <div style="flex: 1; min-width: 300px;">
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                                <h3 style="color: var(--accent); font-size: 1.4rem;">Order #${o.id}</h3>
+                                <span style="background: ${o.status === 'pending' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(0, 184, 169, 0.2)'}; color: ${o.status === 'pending' ? 'var(--warning)' : 'var(--accent)'}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; border: 1px solid ${o.status === 'pending' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(0, 184, 169, 0.3)'};">${o.status}</span>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px;">
+                                    <p style="color: var(--gray-400); font-size: 0.8rem; margin-bottom: 4px;"><i class="fas fa-user" style="margin-right: 5px;"></i> CLIENT DETAILS</p>
+                                    <p style="color: var(--white); font-weight: 600;">${o.client_name}</p>
+                                    <p style="color: var(--gray-300); font-size: 0.9rem;">${o.client_phone}</p>
+                                </div>
+                                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px;">
+                                    <p style="color: var(--gray-400); font-size: 0.8rem; margin-bottom: 4px;"><i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i> ADDRESS</p>
+                                    <p style="color: var(--gray-200); font-size: 0.9rem; line-height: 1.4;">${o.client_address}</p>
+                                </div>
+                            </div>
+
+                            <p style="color: var(--gray-400); font-size: 0.8rem; margin-bottom: 10px; font-weight: 600; letter-spacing: 1px;">ORDER ITEMS</p>
+                            <div style="background: rgba(0,0,0,0.15); border-radius: 12px; padding: 10px; margin-bottom: 15px;">
+                                ${o.items.map(i => `
+                                    <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                        <span style="color: var(--gray-200);">${i.name} <small style="color: var(--gray-500);">x${i.quantity}</small></span>
+                                        <span style="color: var(--white); font-weight: 500;">₹${i.price * i.quantity}</span>
+                                    </div>
+                                `).join('')}
+                                <div style="display: flex; justify-content: space-between; padding-top: 10px; margin-top: 5px;">
+                                    <span style="color: var(--white); font-weight: 700;">Order Total</span>
+                                    <span style="color: var(--accent); font-weight: 700; font-size: 1.1rem;">₹${o.total}</span>
+                                </div>
+                            </div>
+                            <p style="color: var(--gray-500); font-size: 0.75rem;"><i class="far fa-clock" style="margin-right: 5px;"></i> Ordered at: ${o.created_at}</p>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 180px;">
+                            ${o.status === 'pending' ? `
+                                <button class="btn-primary" style="width: 100%; padding: 12px; justify-content: center;" onclick="updateOrderStatus(${o.id}, 'ongoing')">
+                                    <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> Process Order
+                                </button>
+                            ` : ''}
+                            <button class="btn-success" style="width: 100%; padding: 12px; justify-content: center; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981;" onclick="updateOrderStatus(${o.id}, 'delivered')">
+                                <i class="fas fa-check-circle" style="margin-right: 8px;"></i> Mark Delivered
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('') : '<div style="text-align: center; padding: 40px; background: rgba(0,0,0,0.1); border-radius: 20px; border: 2px dashed rgba(255,255,255,0.05);"><i class="fas fa-box-open" style="font-size: 3rem; color: var(--gray-600); margin-bottom: 15px; display: block;"></i><p style="color: var(--gray-400);">No ongoing orders at the moment.</p></div>';
+
+            let historyHtml = history.length > 0 ? history.map(o => `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;" class="history-row" data-client="${o.client_name.toLowerCase()}" data-id="${o.id}">
+                    <td style="padding: 18px 15px; color: var(--gray-400); font-family: monospace;">#${o.id}</td>
+                    <td style="padding: 18px 15px;">
+                        <div style="font-weight: 600; color: var(--white);">${o.client_name}</div>
+                        <div style="font-size: 0.8rem; color: var(--gray-400);">${o.client_phone}</div>
+                    </td>
+                    <td style="padding: 18px 15px; color: var(--gray-200); font-size: 0.9rem;">${o.client_address.substring(0, 30)}...</td>
+                    <td style="padding: 18px 15px; color: var(--accent); font-weight: 700;">₹${o.total}</td>
+                    <td style="padding: 18px 15px; color: var(--gray-300); font-size: 0.85rem;">${o.created_at}</td>
+                    <td style="padding: 18px 15px;"><span style="color: var(--success); font-weight: 600; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;"><i class="fas fa-check-circle"></i> DELIVERED</span></td>
+                </tr>
+            `).join('') : '<tr><td colspan="6" style="padding: 40px; text-align: center; color: var(--gray-500);"><i class="fas fa-history" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i> No order history found.</td></tr>';
+
+            let html = `
+                <div class="section-header" style="margin-bottom: 40px;">
+                    <div>
+                        <h2 class="section-title">Client Orders</h2>
+                        <p style="color: var(--gray-400); font-size: 0.9rem; margin-top: 5px;">Manage ongoing client orders and view transaction history.</p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 60px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(0, 184, 169, 0.1); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-truck-loading" style="color: var(--accent);"></i>
+                        </div>
+                        <h3 style="color: var(--white); font-size: 1.3rem;">Ongoing Orders</h3>
+                        <span style="background: var(--accent); color: var(--navy); padding: 2px 10px; border-radius: 10px; font-size: 0.8rem; font-weight: 800;">${ongoing.length}</span>
+                    </div>
+                    <div id="ongoingOrdersContainer" style="display: grid; gap: 20px;">
+                        ${ongoingHtml}
+                    </div>
+                </div>
+
+                <div style="background: rgba(17, 33, 46, 0.4); border-radius: 24px; padding: 30px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(0, 184, 169, 0.1); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-history" style="color: var(--accent);"></i>
+                            </div>
+                            <h3 style="color: var(--white); font-size: 1.3rem;">Order History</h3>
+                        </div>
+                        <div style="position: relative; flex: 1; max-width: 400px;">
+                            <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--gray-500);"></i>
+                            <input type="text" id="orderSearch" placeholder="Search by client name or order ID..." 
+                                style="padding: 14px 15px 14px 48px; border-radius: 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); color: white; width: 100%; font-size: 0.9rem;"
+                                onkeyup="filterOrderHistory()">
+                        </div>
+                    </div>
+                    <div class="data-table" style="background: transparent; border: none; overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: rgba(0,0,0,0.2);">
+                                    <th style="padding: 15px; text-align: left; color: var(--gray-400); font-weight: 600; font-size: 0.8rem; letter-spacing: 1px;">ORDER ID</th>
+                                    <th style="padding: 15px; text-align: left; color: var(--gray-400); font-weight: 600; font-size: 0.8rem; letter-spacing: 1px;">CLIENT</th>
+                                    <th style="padding: 15px; text-align: left; color: var(--gray-400); font-weight: 600; font-size: 0.8rem; letter-spacing: 1px;">DELIVERY ADDRESS</th>
+                                    <th style="padding: 15px; text-align: left; color: var(--gray-400); font-weight: 600; font-size: 0.8rem; letter-spacing: 1px;">AMOUNT</th>
+                                    <th style="padding: 15px; text-align: left; color: var(--gray-400); font-weight: 600; font-size: 0.8rem; letter-spacing: 1px;">DATE</th>
+                                    <th style="padding: 15px; text-align: left; color: var(--gray-400); font-weight: 600; font-size: 0.8rem; letter-spacing: 1px;">STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderHistoryBody">
+                                ${historyHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            document.getElementById("mainContent").innerHTML = html;
+        });
+}
+
+function updateOrderStatus(orderId, status) {
+    fetch("/admin-update-order-status/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: orderId, status: status })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            loadOrders();
+        } else {
+            alert("Error updating order: " + data.message);
+        }
+    });
+}
+
+function filterOrderHistory() {
+    let val = document.getElementById("orderSearch").value.toLowerCase();
+    document.querySelectorAll(".history-row").forEach(row => {
+        let name = row.dataset.client;
+        let id = row.dataset.id;
+        if (name.includes(val) || id.includes(val)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+}
       let feedbacks = [];
       function loadTodayVisitors() {
         fetch("/get-today-opd-bills/")
@@ -1392,7 +1690,7 @@ function deleteMedicine(id) {
       }
       let appointments = [];
 
-      let ambulanceDrivers = [];
+
 
       // 🔥 re-render dashboard AFTER data comes
       function loadFeedbacks() {
@@ -1755,61 +2053,7 @@ function viewStaff(id) {
     });
 }
 
-      function renderDriver() {
-        return `
-        <h2>Drivers</h2>
 
-        <div id="driverStats"></div>
-        <div id="driverList"></div>
-    `;
-      }
-
-      function loadDrivers() {
-        fetch("/get-drivers/")
-          .then((res) => res.json())
-          .then((data) => {
-            let active = data.drivers.filter(
-              (d) => d.status === "active",
-            ).length;
-            let absent = data.drivers.filter(
-              (d) => d.status === "absent",
-            ).length;
-
-            document.getElementById("driverStats").innerHTML =
-              `Active: ${active} | Absent: ${absent}`;
-
-            let html = "";
-
-            data.drivers.forEach((d) => {
-              html += `
-                <div onclick="viewDriver(${d.id})">
-                    ${d.name} (${d.status})
-                </div>
-            `;
-            });
-
-            document.getElementById("driverList").innerHTML = html;
-          });
-      }
-
-      function viewDriver(id) {
-        fetch("/get-drivers/")
-          .then((res) => res.json())
-          .then((data) => {
-            let d = data.drivers.find((x) => x.id == id);
-
-            document.getElementById("mainContent").innerHTML = `
-            <h2>${d.name}</h2>
-            <p>Email: ${d.email}</p>
-            <p>Phone: ${d.phone}</p>
-            <p>Address: ${d.address}</p>
-
-            <img src="${d.image}" width="150">
-            <img src="${d.aadhaar}" width="150">
-            <img src="${d.license}" width="150">
-        `;
-          });
-      }
 
       function handleDoctorSelection() {
         let doctorId = document.getElementById("slotDoctor").value;
@@ -2255,22 +2499,7 @@ function viewStaff(id) {
           });
       }
 
-      function renderAmbulanceDrivers() {
-        return `<div class="section-header"><h2 class="section-title">Ambulance Driver Management</h2></div>
-              <div class="data-table"><table><thead><tr><th>Driver Name</th><th>License/ID</th><th>Verification Status</th><th>Emergency Status</th><th>Actions</th></tr></thead><tbody>
-              ${ambulanceDrivers
-                .map(
-                  (dr, idx) => `<tr>
-                   <td><i class="fas fa-truck"></i> <strong>${dr.name}</strong></td>
-                   <td>${dr.license || "Not Submitted"}<br><small>${dr.idProof || ""}</small></td>
-                   <td>${dr.verified ? '<span class="badge badge-success">✓ Verified</span>' : '<span class="badge badge-pending">Pending</span>'}</td>
-                   <td><span class="badge ${dr.requestStatus === "pending" ? "badge-pending" : dr.requestStatus === "onway" ? "badge-onway" : "badge-success"}">${dr.requestStatus.toUpperCase()}</span></td>
-                   <td>${!dr.verified ? `<button class="btn-primary" onclick="openVerifyDriver(${idx},'${dr.name}')">Verify License</button>` : `<button class="btn-warning" onclick="updateDriverStatus(${idx},'onway')">Set On Way</button> <button class="btn-success" onclick="updateDriverStatus(${idx},'success')">Mark Success</button>`}</td>
-               </tr>`,
-                )
-                .join("")}
-              </tbody></table></div>`;
-      }
+
 
       function renderBillingForm() {
         const doctorsOptions = doctors
@@ -2760,18 +2989,6 @@ function viewStaff(id) {
             `;
             });
 
-            html += "<h3>Drivers</h3>";
-
-            data.drivers.forEach((d) => {
-              html += `
-                <div>
-                    ${d.name}
-                    <button onclick="approveDriver(${d.id})">Approve</button>
-                    <button onclick="rejectDriver(${d.id})">Reject</button>
-                </div>
-            `;
-            });
-
             document.getElementById("requestList").innerHTML = html;
           });
       }
@@ -2788,17 +3005,7 @@ function viewStaff(id) {
           .then(() => loadStaffSection()); // ✅ correct
       }
 
-      function approveDriver(id) {
-        fetch(`/approve-driver/${id}/`, { method: "POST" })
-          .then((res) => res.json())
-          .then(() => loadRequests());
-      }
 
-      function rejectDriver(id) {
-        fetch(`/reject-driver/${id}/`, { method: "POST" })
-          .then((res) => res.json())
-          .then(() => loadRequests());
-      }
       function renderSection(section) {
         let content = "";
 
@@ -2817,22 +3024,24 @@ function viewStaff(id) {
           content = renderDoctors();
         } else if (section === "appointments") {
           content = renderAppointmentsAndTimings();
-        } else if (section === "ambulance") {
-          content = renderAmbulanceDrivers();
+
         } else if (section === "staff") {
           document.getElementById("mainContent").innerHTML = renderStaff();
 
           loadStaffSection();
-        } else if (section === "driver") {
-          content = renderDriver();
+
         } else if (section === "requests") {
           content = renderRequests();
         } else if (section === "billing") {
           content = renderBilling();
         }
         else if (section === "medicine") {
-    loadMedicineSection();
-}
+          loadMedicineSection();
+          return;
+        } else if (section === "orders") {
+          loadOrders();
+          return;
+        }
 
         // 🔥 FIRST render HTML
         document.getElementById("mainContent").innerHTML = content;
@@ -2845,8 +3054,7 @@ function viewStaff(id) {
           setTimeout(loadTimingsForAppointments, 100);
         } else if (section === "staff") {
           setTimeout(loadStaff, 100);
-        } else if (section === "driver") {
-          setTimeout(loadDrivers, 100);
+
         } else if (section === "requests") {
           setTimeout(loadRequests, 100);
         } else if (section === "billing") {
@@ -3302,30 +3510,7 @@ function viewStaff(id) {
             appointments = data.appointments;
           });
       }
-      window.openVerifyDriver = (idx, name) => {
-        document.getElementById("driverIdx").value = idx;
-        document.getElementById("driverNameDisplay").innerHTML =
-          `<i class="fas fa-id-card"></i> ${name}`;
-        openModal("driverModal");
-      };
-      window.verifyDriver = () => {
-        let idx = parseInt(document.getElementById("driverIdx").value),
-          license = document.getElementById("licenseNumber").value,
-          idProof = document.getElementById("idProof").value;
-        if (!license || !idProof) return alert("Enter License & ID proof");
-        ambulanceDrivers[idx].license = license;
-        ambulanceDrivers[idx].idProof = idProof;
-        ambulanceDrivers[idx].verified = true;
-        ambulanceDrivers[idx].requestStatus = "pending";
 
-        closeModal("driverModal");
-        renderCurrentView();
-      };
-      window.updateDriverStatus = (idx, status) => {
-        ambulanceDrivers[idx].requestStatus = status;
-
-        renderCurrentView();
-      };
 
       function renderCurrentView() {
         let active =
@@ -3367,9 +3552,7 @@ function viewStaff(id) {
         }
 
         // 🟢 Ambulance
-        else if (active === "ambulance") {
-          html = renderAmbulanceDrivers();
-        }
+
 
         // 🟢 Billing
         else if (active === "billing") {
@@ -3429,7 +3612,7 @@ renderSection("dashboard");   // or your default
             renderSection(section);
           });
         });
-        ocument
+        document
           .getElementById("logoutButton")
           .addEventListener("click", handleLogout);
       });
@@ -3445,6 +3628,7 @@ renderSection("dashboard");   // or your default
         if (section === "citizens") loadCitizens();
         else if (section === "doctors") loadDoctors();
         else if (section === "medicine") loadMedicineSection();
+        else if (section === "orders") loadOrders();
 
     });
 });
