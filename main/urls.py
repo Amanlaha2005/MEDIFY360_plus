@@ -85,4 +85,5 @@ urlpatterns = [
     path("admin-get-orders/", views.admin_get_orders),
     path("admin-update-order-status/", views.admin_update_order_status),
     path("claim-coins/", views.claim_coins),
+    path("fitness/", views.fitness_view),
 ]

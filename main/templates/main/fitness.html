@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medify | Health Core Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-deep: #050810;
+            --teal-primary: #00C2B3;
+            --teal-glow: #14E5D4;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --text-white: #FFFFFF;
+            --text-muted: #9CA3AF;
+            --card-bg: rgba(18, 28, 40, 0.6);
+            --danger: #F0525F;
+            --success: #10B981;
+            --warning: #F59E0B;
+        }
+        body {
+            background: var(--bg-deep);
+            color: var(--text-white);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* AMBIENT BACKGROUND */
+        .ambient-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            overflow: hidden; z-index: -1; background: #050810;
+        }
+        .blob {
+            position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.4;
+            animation: float 25s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: rgba(0, 194, 179, 0.2); }
+        .blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: rgba(20, 229, 212, 0.15); animation-delay: -5s; }
+        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(10%, 5%) scale(1.1); } 100% { transform: translate(-5%, 15%) scale(0.9); } }
+
+        .container { max-width: 1300px; margin: 0 auto; padding: 40px 20px; }
+        
+        /* HEADER */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .back-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle);
+            color: var(--text-white); padding: 12px 24px; border-radius: 40px;
+            cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 600;
+            transition: 0.3s;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--teal-primary); transform: translateX(-5px); }
+        .logo-text { font-family: 'DM Serif Display', serif; font-size: 2.2rem; background: linear-gradient(90deg, #fff, var(--teal-glow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* GRID LAYOUT */
+        .fitness-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+        @media (max-width: 1000px) { .fitness-grid { grid-template-columns: 1fr; } }
+
+        .premium-card {
+            background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--border-subtle);
+            border-radius: 32px; padding: 32px; position: relative; overflow: hidden;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .premium-card:hover { transform: translateY(-5px); border-color: rgba(0, 194, 179, 0.3); }
+
+        .card-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+        .card-title ion-icon { color: var(--teal-primary); font-size: 1.8rem; }
+
+        /* STATS GRID */
+        .stats-subgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-box {
+            background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05);
+            padding: 20px; border-radius: 20px; text-align: center;
+        }
+        .stat-box .label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .stat-box .value { font-size: 1.8rem; font-weight: 800; color: var(--teal-glow); }
+
+        /* ANALYSIS BOXES */
+        .analysis-box {
+            background: rgba(0,0,0,0.3); border-radius: 24px; padding: 24px; line-height: 1.6;
+            font-size: 1rem; color: #E5E7EB; border: 1px solid rgba(255,255,255,0.03); margin-bottom: 20px;
+        }
+        .analysis-box h4 { color: var(--teal-primary); margin-bottom: 12px; font-size: 1.1rem; }
+
+        /* INPUT GROUP */
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px; }
+        .input-group input {
+            width: 100%; padding: 14px 20px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-subtle);
+            border-radius: 16px; color: white; font-size: 1rem; transition: 0.3s;
+        }
+        .input-group input:focus { outline: none; border-color: var(--teal-primary); background: rgba(0,0,0,0.4); }
+
+        .update-btn {
+            width: 100%; padding: 16px; border-radius: 16px; background: linear-gradient(135deg, var(--teal-primary), var(--teal-glow));
+            color: #050810; font-weight: 700; border: none; cursor: pointer; transition: 0.3s; font-size: 1rem;
+            box-shadow: 0 8px 20px rgba(0, 194, 179, 0.3);
+        }
+        .update-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0, 194, 179, 0.5); }
+
+        /* LISTS */
+        .plan-list { list-style: none; }
+        .plan-list li { margin-bottom: 12px; display: flex; gap: 12px; align-items: flex-start; font-size: 0.95rem; }
+        .plan-list li ion-icon { color: var(--success); margin-top: 3px; flex-shrink: 0; }
+
+        /* SCORE CIRCLE */
+        .score-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        .score-circle {
+            width: 200px; height: 200px; border-radius: 50%;
+            border: 10px solid rgba(0,194,179,0.1); border-top-color: var(--teal-primary);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            animation: spin 2s infinite linear;
+        }
+        .score-value { font-size: 3.5rem; font-weight: 800; color: white; }
+        .score-label { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; }
+
+        @keyframes spin { 0% { border-top-color: var(--teal-primary); } 50% { border-top-color: var(--teal-glow); } 100% { border-top-color: var(--teal-primary); } }
+        
+        .badge { padding: 6px 12px; border-radius: 40px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .badge-safe { background: rgba(16, 185, 129, 0.15); color: #10B981; }
+        .badge-warn { background: rgba(245, 158, 11, 0.15); color: #F59E0B; }
+        .badge-danger { background: rgba(240, 82, 95, 0.15); color: #F0525F; }
+    </style>
+</head>
+<body>
+    <div class="ambient-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="container">
+        <header class="header">
+            <button class="back-btn" onclick="history.back()">
+                <ion-icon name="arrow-back-outline"></ion-icon> Dashboard
+            </button>
+            <h2 class="logo-text">Health Core Analysis</h2>
+            <div style="width: 120px;"></div> <!-- Spacer -->
+        </header>
+
+        <div class="fitness-grid">
+            <!-- OVERVIEW CARD -->
+            <div class="premium-card">
+                <div class="card-title"><ion-icon name="shield-checkmark-outline"></ion-icon> Health Score Index</div>
+                <div class="score-container">
+                    <div style="position:relative;">
+                        <div class="score-circle">
+                            <span class="score-value" id="overallScore">--</span>
+                            <span class="score-label">Excellent</span>
+                        </div>
+                    </div>
+                    <p style="margin-top: 24px; text-align: center; color: var(--text-muted); font-size: 0.95rem;">
+                        Your health index is calculated based on BMI trends, Risk assessments, and consistent checkups.
+                    </p>
+                </div>
+            </div>
+
+            <!-- METRICS CARD -->
+            <div class="premium-card">
+                <div class="card-title"><ion-icon name="pulse-outline"></ion-icon> Core Metrics</div>
+                <div class="stats-subgrid">
+                    <div class="stat-box">
+                        <span class="label">BMI</span>
+                        <div class="value" id="statBMI">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Age</span>
+                        <div class="value" id="statAge">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Height</span>
+                        <div class="value" id="statHeight">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Weight</span>
+                        <div class="value" id="statWeight">--</div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>Blood Pressure (systolic/diastolic)</label>
+                    <input id="bpInput" placeholder="e.g. 120/80">
+                </div>
+                <div class="input-group">
+                    <label>Cholesterol (mg/dL)</label>
+                    <input id="cholInput" placeholder="e.g. 190">
+                </div>
+                <button class="update-btn" onclick="saveFitness()">Update Core Analysis</button>
+            </div>
+        </div>
+
+        <div class="fitness-grid">
+            <!-- RISK ASSESSMENT -->
+            <div class="premium-card">
+                <div class="card-title"><ion-icon name="analytics-outline"></ion-icon> AI Risk Assessment</div>
+                <div class="analysis-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h4>Diabetes Risk</h4>
+                        <span id="diabetesBadge" class="badge">Calculating...</span>
+                    </div>
+                    <p id="diabetesAdvice" style="font-size:0.9rem; color:var(--text-muted);">Awaiting latest glucose and weight data for precision assessment.</p>
+                </div>
+                <div class="analysis-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h4>Heart Health</h4>
+                        <span id="heartBadge" class="badge">Calculating...</span>
+                    </div>
+                    <p id="heartAdvice" style="font-size:0.9rem; color:var(--text-muted);">Cardiovascular stability check based on current BP and cholesterol levels.</p>
+                </div>
+            </div>
+
+            <!-- TREND GRAPH -->
+            <div class="premium-card">
+                <div class="card-title"><ion-icon name="trending-up-outline"></ion-icon> Progress Visualization</div>
+                <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 20px; height: 260px;">
+                    <canvas id="fitnessChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI PLANS -->
+        <div class="fitness-grid">
+            <div class="premium-card">
+                <div class="card-title"><ion-icon name="restaurant-outline"></ion-icon> Personalized Nutrition Plan</div>
+                <ul class="plan-list" id="dietList">
+                    <li><ion-icon name="checkmark-circle"></ion-icon> Loading your specialized diet routine...</li>
+                </ul>
+            </div>
+            <div class="premium-card">
+                <div class="card-title"><ion-icon name="barbell-outline"></ion-icon> Optimized Exercise Regimen</div>
+                <ul class="plan-list" id="exerciseList">
+                    <li><ion-icon name="checkmark-circle"></ion-icon> Loading your custom workout strategy...</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadData() {
+            // Load Profile
+            fetch("/get-profile/")
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("statAge").innerText = data.age || "--";
+                document.getElementById("statBMI").innerText = data.bmi || "--";
+                document.getElementById("statHeight").innerText = data.height ? data.height + "cm" : "--";
+                document.getElementById("statWeight").innerText = data.weight ? data.weight + "kg" : "--";
+                
+                generatePlans(data.bmi);
+                updateScore(data.bmi);
+            });
+
+            // Load Fitness Records
+            fetch("/get-fitness/")
+            .then(res => res.json())
+            .then(data => {
+                if (data.records.length > 0) {
+                    const last = data.records[data.records.length - 1];
+                    document.getElementById("bpInput").value = last.bp || "";
+                    document.getElementById("cholInput").value = last.chol || "";
+                    
+                    updateRiskBadges(last);
+                    renderChart(data.records);
+                }
+            });
+        }
+
+        function updateScore(bmi) {
+            let score = 85; // Base
+            if (bmi >= 18.5 && bmi <= 25) score += 10;
+            else if (bmi > 25 && bmi < 30) score -= 5;
+            else if (bmi >= 30) score -= 15;
+            
+            document.getElementById("overallScore").innerText = score;
+        }
+
+        function updateRiskBadges(record) {
+            const db = document.getElementById("diabetesBadge");
+            const ht = document.getElementById("heartBadge");
+            
+            if (record.diabetes === "low") {
+                db.innerText = "Low Risk"; db.className = "badge badge-safe";
+                document.getElementById("diabetesAdvice").innerText = "Your glucose levels and weight are in an optimal range. Keep maintaining this lifestyle!";
+            } else {
+                db.innerText = "Moderate"; db.className = "badge badge-warn";
+                document.getElementById("diabetesAdvice").innerText = "Slightly elevated indicators. Consider reducing sugar intake and increasing fiber.";
+            }
+
+            if (record.heart === "low") {
+                ht.innerText = "Optimal"; ht.className = "badge badge-safe";
+                document.getElementById("heartAdvice").innerText = "Blood pressure and cholesterol are within healthy parameters. Cardio endurance is strong.";
+            } else {
+                ht.innerText = "Alert"; ht.className = "badge badge-danger";
+                document.getElementById("heartAdvice").innerText = "BP or Cholesterol levels are above threshold. Consultation with a specialist is recommended.";
+            }
+        }
+
+        function generatePlans(bmi) {
+            const diet = document.getElementById("dietList");
+            const exercise = document.getElementById("exerciseList");
+            
+            if (!bmi) return;
+
+            let dietHtml = "";
+            let exHtml = "";
+
+            if (bmi < 25) {
+                dietHtml = `
+                    <li><ion-icon name="checkmark-circle"></ion-icon> Balanced high-protein maintenance diet</li>
+                    <li><ion-icon name="checkmark-circle"></ion-icon> Focus on complex carbs for sustained energy</li>
+                    <li><ion-icon name="checkmark-circle"></ion-icon> 2.5L daily hydration target</li>
+                `;
+                exHtml = `
+                    <li><ion-icon name="checkmark-circle"></ion-icon> 3 days weight training for muscle tone</li>
+                    <li><ion-icon name="checkmark-circle"></ion-icon> 2 days moderate cardio (30 mins)</li>
+                    <li><ion-icon name="checkmark-circle"></ion-icon> Weekly active recovery (Yoga/Walking)</li>
+                `;
+            } else {
+                dietHtml = `
+                    <li><ion-icon name="checkmark-circle"></ion-icon> Caloric deficit focus with lean proteins</li>
+                    <li><ion-icon name="checkmark-circle"></ion-icon> Intermittent fasting (16:8) recommended</li>
+                    <li><ion-icon name="checkmark-circle"></ion-icon> Zero processed sugars and low sodium</li>
+                `;
+                exHtml = `
+                    <li><ion-icon name="checkmark-circle"></ion-icon> Daily 45 mins brisk walking or cycling</li>
+                    <li><ion-icon name="checkmark-circle"></ion-icon> HIIT sessions 2x per week</li>
+                    <li><ion-icon name="checkmark-circle"></ion-icon> Consistent morning flexibility routine</li>
+                `;
+            }
+            diet.innerHTML = dietHtml;
+            exercise.innerHTML = exHtml;
+        }
+
+        function renderChart(records) {
+            const labels = records.map(r => new Date(r.date).toLocaleDateString('default', {month:'short', day:'numeric'}));
+            const bmiData = records.map(r => r.bmi);
+            
+            const ctx = document.getElementById('fitnessChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'BMI Trend',
+                        data: bmiData,
+                        borderColor: '#00C2B3',
+                        backgroundColor: 'rgba(0, 194, 179, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#14E5D4'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9CA3AF' } },
+                        x: { grid: { display: false }, ticks: { color: '#9CA3AF' } }
+                    }
+                }
+            });
+        }
+
+        function saveFitness() {
+            const bp = document.getElementById("bpInput").value;
+            const chol = document.getElementById("cholInput").value;
+            
+            fetch("/save-fitness/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ bp, chol })
+            })
+            .then(res => res.json())
+            .then(() => {
+                alert("Core Analysis Updated! 🚀");
+                loadData();
+            });
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

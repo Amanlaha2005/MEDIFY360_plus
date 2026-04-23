@@ -1004,7 +1004,7 @@
     <h3>📊 Monthly BMI Progress</h3>
 
     <button class="analysis-btn" id="fullAnalysisBtn">
-        Full Analysis →
+        Full Analysied →
     </button>
 </div>
             <div id="bmiImprovementBox" style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
@@ -1524,7 +1524,7 @@ function confirmOrder() {
     window.loadBMIGraphFull = loadBMIGraphFull;
 
 document.getElementById("fullAnalysisBtn").addEventListener("click", function () {
-    document.getElementById("fitnessModal").classList.add("active");
+    window.location.href = "/fitness/";
 });
 </script>
 
